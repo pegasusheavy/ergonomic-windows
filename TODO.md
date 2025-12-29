@@ -16,7 +16,45 @@ cargo bench --bench allocations
 
 # Run memory profiler (generates dhat-heap.json)
 cargo run --bin memory-profile --features dhat-heap
+
+# Run CPU profiler (generates flamegraph.svg, requires Administrator on Windows)
+cargo flamegraph --bin cpu-profile
 ```
+
+## CPU Profiling with Flamegraph
+
+### Prerequisites
+
+```bash
+# Install flamegraph
+cargo install flamegraph
+```
+
+### Running (Windows - requires Administrator)
+
+```powershell
+# Open PowerShell as Administrator, then:
+cd F:\Projects\ergonomic-windows
+cargo flamegraph --bin cpu-profile
+
+# Or profile benchmarks:
+cargo flamegraph --bench string_bench -- --bench
+```
+
+### Output
+
+- `flamegraph.svg` - Interactive SVG showing CPU time distribution
+- Open in browser to explore call stacks
+- Wider boxes = more CPU time spent
+
+### What to Look For
+
+| Pattern | Meaning | Action |
+|---------|---------|--------|
+| Wide `to_wide` bar | String conversion is hot | Optimize UTF-16 encoding |
+| Wide `alloc` bar | Allocation overhead | Consider pooling/SSO |
+| Tall stacks | Deep call chains | Consider inlining |
+| `memcpy` hotspot | Memory copying | Reduce copies |
 
 ## Running Fuzz Tests
 
@@ -314,5 +352,5 @@ pool.put(wide);
 - All benchmarks run on native Windows (x86_64-pc-windows-msvc)
 - Memory profiling with dhat requires the `dhat-heap` feature
 - Allocation tracking uses a custom global allocator in benchmarks
-- Consider using `cargo flamegraph` for detailed CPU profiling
+- ✅ CPU profiling with `cargo flamegraph` - Added `cpu-profile` binary and documentation
 - ✅ Vec growth pattern in `to_wide` has been fixed (now single allocation)

@@ -53,6 +53,10 @@ name = "memory-profile"
 path = "src/bin/memory_profile.rs"
 required-features = ["dhat-heap"]
 
+[[bin]]
+name = "cpu-profile"
+path = "src/bin/cpu_profile.rs"
+
 [[bench]]
 name = "string_bench"
 harness = false
@@ -60,3 +64,13 @@ harness = false
 [[bench]]
 name = "allocations"
 harness = false
+
+# Enable debug symbols in release for profiling (flamegraph, perf, etc.)
+[profile.release]
+debug = true
+
+# Profiling profile - optimized but with full debug info
+[profile.profiling]
+inherits = "release"
+debug = true
+strip = false
