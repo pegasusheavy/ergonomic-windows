@@ -2,12 +2,16 @@
 name = "ergonomic-windows"
 version = "0.1.0"
 edition = "2021"
-description = "Ergonomic wrappers around Windows APIs for Rust"
+rust-version = "1.70"
+description = "Ergonomic, safe Rust wrappers for Windows APIs - handles, processes, registry, file system, and UTF-16 strings with zero-cost abstractions"
 license = "MIT OR Apache-2.0"
 authors = ["Pegasus Heavy Industries LLC"]
-repository = "https://github.com/phasetwo/ergonomic-windows"
-keywords = ["windows", "win32", "api", "ffi", "ergonomic"]
-categories = ["os::windows-apis", "api-bindings"]
+repository = "https://github.com/pegasusheavy/ergonomic-windows"
+homepage = "https://pegasusheavy.github.io/ergonomic-windows/"
+documentation = "https://docs.rs/ergonomic-windows"
+readme = "README.md"
+keywords = ["windows", "win32", "ffi", "utf16", "registry"]
+categories = ["os::windows-apis", "api-bindings", "development-tools::ffi"]
 
 [dependencies]
 windows = { version = "0.58", features = [
