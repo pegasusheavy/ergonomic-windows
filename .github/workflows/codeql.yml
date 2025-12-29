@@ -19,26 +19,17 @@ jobs:
       contents: read
       security-events: write
 
-    strategy:
-      fail-fast: false
-      matrix:
-        language: ['c-cpp']
-        # CodeQL treats Rust as C/C++ for analysis purposes
-        # Note: Native Rust support is in beta, using c-cpp for now
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
-          languages: ${{ matrix.language }}
+          languages: rust
           # Use extended queries for more comprehensive security analysis
           queries: security-extended,security-and-quality
 
@@ -48,5 +39,5 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
-          category: "/language:${{matrix.language}}"
+          category: "/language:rust"
 
