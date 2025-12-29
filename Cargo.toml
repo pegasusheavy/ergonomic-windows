@@ -31,7 +31,6 @@ exclude = [
     "target/",
     # Development files
     "TODO.md",
-    "CHANGELOG.md",
     # Test fixtures (keep tests themselves)
     "tests/fixtures/",
 ]

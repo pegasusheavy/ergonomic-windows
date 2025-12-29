@@ -39,10 +39,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Extract changelog for version
+        id: changelog
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          $changelog = Get-Content CHANGELOG.md -Raw
+          # Extract section for this version
+          $pattern = "(?ms)## \[$version\].*?(?=## \[|$)"
+          if ($changelog -match $pattern) {
+            $notes = $Matches[0].Trim()
+            # Escape for GitHub Actions
+            $notes = $notes -replace '%', '%25'
+            $notes = $notes -replace "`n", '%0A'
+            $notes = $notes -replace "`r", '%0D'
+            echo "notes=$notes" >> $env:GITHUB_OUTPUT
+          } else {
+            echo "notes=" >> $env:GITHUB_OUTPUT
+          }
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          generate_release_notes: true
+          body: ${{ steps.changelog.outputs.notes }}
+          generate_release_notes: ${{ steps.changelog.outputs.notes == '' }}
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}
 
