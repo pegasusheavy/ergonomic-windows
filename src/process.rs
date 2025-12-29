@@ -412,4 +412,243 @@ mod tests {
         let pid = current_pid();
         assert!(pid > 0);
     }
+
+    // ============================================================================
+    // Process Spawning Integration Tests
+    // ============================================================================
+
+    #[test]
+    fn test_spawn_cmd_echo() {
+        // Spawn cmd.exe with /c to run a simple command
+        let process = Command::new("cmd.exe")
+            .arg("/c")
+            .arg("echo hello")
+            .no_window()
+            .spawn();
+
+        assert!(process.is_ok(), "Failed to spawn cmd.exe");
+        let process = process.unwrap();
+        assert!(process.pid() > 0);
+
+        let exit_code = process.wait();
+        assert!(exit_code.is_ok());
+        assert_eq!(exit_code.unwrap(), 0);
+    }
+
+    #[test]
+    fn test_spawn_cmd_exit_code() {
+        // Test that we can get non-zero exit codes
+        let exit_code = Command::new("cmd.exe")
+            .arg("/c")
+            .arg("exit 42")
+            .no_window()
+            .run();
+
+        assert!(exit_code.is_ok());
+        assert_eq!(exit_code.unwrap(), 42);
+    }
+
+    #[test]
+    fn test_spawn_nonexistent_program() {
+        // Spawning a nonexistent program should fail
+        let result = Command::new("this_program_does_not_exist_12345.exe").spawn();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_spawn_with_args() {
+        // Test passing arguments with spaces and special chars
+        let exit_code = Command::new("cmd.exe")
+            .arg("/c")
+            .arg("echo")
+            .arg("hello world")
+            .no_window()
+            .run();
+
+        assert!(exit_code.is_ok());
+        assert_eq!(exit_code.unwrap(), 0);
+    }
+
+    #[test]
+    fn test_spawn_with_working_directory() {
+        // Test setting working directory
+        let temp_dir = std::env::temp_dir();
+        let temp_str = temp_dir.to_string_lossy().into_owned();
+
+        let exit_code = Command::new("cmd.exe")
+            .arg("/c")
+            .arg("cd")
+            .current_dir(temp_str)
+            .no_window()
+            .run();
+
+        assert!(exit_code.is_ok());
+        assert_eq!(exit_code.unwrap(), 0);
+    }
+
+    #[test]
+    fn test_spawn_with_env() {
+        // Test setting environment variables
+        let exit_code = Command::new("cmd.exe")
+            .arg("/c")
+            .arg("echo %TEST_VAR%")
+            .env("TEST_VAR", "hello_test")
+            .no_window()
+            .run();
+
+        assert!(exit_code.is_ok());
+        assert_eq!(exit_code.unwrap(), 0);
+    }
+
+    #[test]
+    fn test_try_wait_running_process() {
+        // Spawn a process that sleeps briefly
+        let process = Command::new("cmd.exe")
+            .arg("/c")
+            .arg("timeout /t 1 /nobreak > nul")
+            .no_window()
+            .spawn();
+
+        assert!(process.is_ok());
+        let process = process.unwrap();
+
+        // Immediately try_wait - process should still be running
+        let result = process.try_wait();
+        assert!(result.is_ok());
+        // May or may not have finished yet, depending on timing
+        // Just verify the call doesn't fail
+    }
+
+    #[test]
+    fn test_wait_timeout() {
+        // Spawn a process that takes a while
+        let process = Command::new("cmd.exe")
+            .arg("/c")
+            .arg("timeout /t 10 /nobreak > nul")
+            .no_window()
+            .spawn();
+
+        assert!(process.is_ok());
+        let process = process.unwrap();
+
+        // Wait with a short timeout - should timeout
+        let result = process.wait_timeout(Some(Duration::from_millis(100)));
+        assert!(result.is_err()); // Should timeout
+
+        // Terminate the process so we don't leave it running
+        let _ = process.terminate(1);
+    }
+
+    #[test]
+    fn test_is_running() {
+        let process = Command::new("cmd.exe")
+            .arg("/c")
+            .arg("exit 0")
+            .no_window()
+            .spawn();
+
+        assert!(process.is_ok());
+        let process = process.unwrap();
+
+        // Wait for it to finish
+        let _ = process.wait();
+
+        // Should no longer be running
+        let is_running = process.is_running();
+        assert!(is_running.is_ok());
+        assert!(!is_running.unwrap());
+    }
+
+    #[test]
+    fn test_terminate_process() {
+        // Spawn a long-running process
+        let process = Command::new("cmd.exe")
+            .arg("/c")
+            .arg("timeout /t 60 /nobreak > nul")
+            .no_window()
+            .spawn();
+
+        assert!(process.is_ok());
+        let process = process.unwrap();
+
+        // Terminate it
+        let result = process.terminate(99);
+        assert!(result.is_ok());
+
+        // Wait for it to actually terminate
+        let exit_code = process.wait();
+        assert!(exit_code.is_ok());
+        // Exit code should be 99 or 1 depending on timing
+    }
+
+    #[test]
+    fn test_open_existing_process() {
+        // Open the current process
+        let pid = current_pid();
+        let result = Process::open(pid, ProcessAccess::QUERY);
+        assert!(result.is_ok());
+
+        let process = result.unwrap();
+        assert_eq!(process.pid(), pid);
+    }
+
+    #[test]
+    fn test_open_nonexistent_process() {
+        // Try to open a process with an invalid PID
+        // PID 4 is usually System, but PID 99999999 shouldn't exist
+        let result = Process::open(99999999, ProcessAccess::QUERY);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_quote_arg_edge_cases() {
+        // Empty string
+        assert_eq!(quote_arg(""), "\"\"");
+
+        // With tab
+        assert_eq!(quote_arg("a\tb"), "\"a\tb\"");
+
+        // With quote
+        assert_eq!(quote_arg("a\"b"), "\"a\\\"b\"");
+
+        // Backslash before quote
+        assert_eq!(quote_arg("a\\\"b"), "\"a\\\\\\\"b\"");
+
+        // Trailing backslash (no spaces, so no quoting needed)
+        assert_eq!(quote_arg("path\\"), "path\\");
+
+        // Trailing backslash with space (needs quoting)
+        assert_eq!(quote_arg("path with space\\"), "\"path with space\\\\\"");
+
+        // No quoting needed
+        assert_eq!(quote_arg("simple-path.txt"), "simple-path.txt");
+    }
+
+    #[test]
+    fn test_command_line_building() {
+        let cmd = Command::new("program.exe")
+            .arg("arg1")
+            .arg("arg with space")
+            .arg("arg\"quote");
+
+        let cmd_line = cmd.build_command_line();
+        assert!(cmd_line.contains("program.exe"));
+        assert!(cmd_line.contains("arg1"));
+        assert!(cmd_line.contains("\"arg with space\""));
+        assert!(cmd_line.contains("\\\""));
+    }
+
+    #[test]
+    fn test_spawn_unicode_args() {
+        // Test with Unicode arguments
+        let exit_code = Command::new("cmd.exe")
+            .arg("/c")
+            .arg("echo")
+            .arg("日本語")
+            .no_window()
+            .run();
+
+        assert!(exit_code.is_ok());
+        assert_eq!(exit_code.unwrap(), 0);
+    }
 }

@@ -221,4 +221,232 @@ mod tests {
         let result = OwnedHandle::new(HANDLE::default());
         assert!(result.is_err());
     }
+
+    // ============================================================================
+    // Handle Management Stress Tests
+    // ============================================================================
+
+    #[test]
+    fn test_handle_extension_trait() {
+        assert!(!INVALID_HANDLE_VALUE.is_valid());
+        assert!(!HANDLE::default().is_valid());
+    }
+
+    #[test]
+    fn test_new_allow_null_rejects_invalid() {
+        let result = OwnedHandle::new_allow_null(INVALID_HANDLE_VALUE);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_handle_into_raw_prevents_double_close() {
+        // Create a real handle via file creation
+        use crate::fs::OpenOptions;
+        use std::env;
+
+        let temp_path = env::temp_dir().join("handle_test_into_raw.tmp");
+
+        // Create and open the file
+        if let Ok(handle) = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .open(&temp_path)
+        {
+            // Get the raw handle
+            let raw = handle.into_raw();
+
+            // Handle should be valid
+            assert!(raw.is_valid());
+
+            // Manually close it
+            unsafe {
+                let _ = CloseHandle(raw);
+            }
+
+            // Clean up
+            let _ = std::fs::remove_file(&temp_path);
+        }
+    }
+
+    #[test]
+    fn test_handle_try_clone() {
+        use crate::fs::OpenOptions;
+        use std::env;
+
+        let temp_path = env::temp_dir().join("handle_test_clone.tmp");
+
+        if let Ok(handle) = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .open(&temp_path)
+        {
+            // Clone the handle
+            let cloned = handle.try_clone();
+            assert!(cloned.is_ok());
+
+            let cloned = cloned.unwrap();
+
+            // Both handles should be valid and different
+            assert!(handle.as_raw().is_valid());
+            assert!(cloned.as_raw().is_valid());
+            assert_ne!(handle.as_raw().0, cloned.as_raw().0);
+
+            // Clean up (handles will auto-close on drop)
+            drop(handle);
+            drop(cloned);
+            let _ = std::fs::remove_file(&temp_path);
+        }
+    }
+
+    #[test]
+    fn test_borrowed_handle_from_owned() {
+        use crate::fs::OpenOptions;
+        use std::env;
+
+        let temp_path = env::temp_dir().join("handle_test_borrow.tmp");
+
+        if let Ok(handle) = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .open(&temp_path)
+        {
+            // Create borrowed handle
+            let borrowed = BorrowedHandle::from_owned(&handle);
+            assert_eq!(borrowed.as_raw().0, handle.as_raw().0);
+
+            // Also test From trait
+            let borrowed2: BorrowedHandle = (&handle).into();
+            assert_eq!(borrowed2.as_raw().0, handle.as_raw().0);
+
+            drop(handle);
+            let _ = std::fs::remove_file(&temp_path);
+        }
+    }
+
+    #[test]
+    fn test_stress_handle_creation_and_cleanup() {
+        use crate::fs::OpenOptions;
+        use std::env;
+
+        // Create and close many handles rapidly
+        for i in 0..100 {
+            let temp_path = env::temp_dir().join(format!("handle_stress_{}.tmp", i));
+
+            if let Ok(_handle) = OpenOptions::new()
+                .read(true)
+                .write(true)
+                .create(true)
+                .open(&temp_path)
+            {
+                // Handle auto-closes on drop
+            }
+
+            // Clean up file
+            let _ = std::fs::remove_file(&temp_path);
+        }
+    }
+
+    #[test]
+    fn test_stress_handle_cloning() {
+        use crate::fs::OpenOptions;
+        use std::env;
+
+        let temp_path = env::temp_dir().join("handle_stress_clone.tmp");
+
+        if let Ok(handle) = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .open(&temp_path)
+        {
+            // Clone the handle many times
+            let mut clones = Vec::new();
+            for _ in 0..50 {
+                if let Ok(cloned) = handle.try_clone() {
+                    clones.push(cloned);
+                }
+            }
+
+            // Verify all clones are valid
+            for clone in &clones {
+                assert!(clone.as_raw().is_valid());
+            }
+
+            // Drop all clones
+            drop(clones);
+            drop(handle);
+
+            let _ = std::fs::remove_file(&temp_path);
+        }
+    }
+
+    #[test]
+    fn test_multiple_handles_same_file() {
+        use crate::fs::OpenOptions;
+        use std::env;
+
+        let temp_path = env::temp_dir().join("handle_multiple.tmp");
+
+        // Open the same file multiple times with sharing enabled
+        let h1 = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .share_read(true)
+            .share_write(true)
+            .open(&temp_path);
+
+        let h2 = OpenOptions::new()
+            .read(true)
+            .share_read(true)
+            .share_write(true)
+            .open(&temp_path);
+
+        let h3 = OpenOptions::new()
+            .read(true)
+            .share_read(true)
+            .share_write(true)
+            .open(&temp_path);
+
+        // All handles should be valid
+        if let (Ok(h1), Ok(h2), Ok(h3)) = (h1, h2, h3) {
+            assert!(h1.as_raw().is_valid());
+            assert!(h2.as_raw().is_valid());
+            assert!(h3.as_raw().is_valid());
+
+            // All handles should be different
+            assert_ne!(h1.as_raw().0, h2.as_raw().0);
+            assert_ne!(h2.as_raw().0, h3.as_raw().0);
+        }
+
+        let _ = std::fs::remove_file(&temp_path);
+    }
+
+    #[test]
+    fn test_handle_drop_order() {
+        use crate::fs::OpenOptions;
+        use std::env;
+
+        // Test that dropping handles in different orders doesn't cause issues
+        let temp_path1 = env::temp_dir().join("handle_order_1.tmp");
+        let temp_path2 = env::temp_dir().join("handle_order_2.tmp");
+        let temp_path3 = env::temp_dir().join("handle_order_3.tmp");
+
+        let h1 = OpenOptions::new().read(true).write(true).create(true).open(&temp_path1).ok();
+        let h2 = OpenOptions::new().read(true).write(true).create(true).open(&temp_path2).ok();
+        let h3 = OpenOptions::new().read(true).write(true).create(true).open(&temp_path3).ok();
+
+        // Drop in reverse order
+        drop(h3);
+        drop(h1);
+        drop(h2);
+
+        // Clean up
+        let _ = std::fs::remove_file(&temp_path1);
+        let _ = std::fs::remove_file(&temp_path2);
+        let _ = std::fs::remove_file(&temp_path3);
+    }
 }

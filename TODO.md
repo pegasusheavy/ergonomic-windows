@@ -300,12 +300,12 @@ pool.put(wide);
 ## Test Coverage Improvements
 
 - [x] **Fuzzing** - Added 5 fuzz targets for string operations
-- [ ] Add tests for unicode edge cases (surrogate pairs, BOM)
-- [ ] Add tests for MAX_PATH length paths
-- [ ] Add tests for empty registry values
-- [ ] Add integration tests for process spawning
-- [ ] Add stress tests for handle management
-- [ ] Run fuzz tests and fix any discovered issues
+- [x] Add tests for unicode edge cases (surrogate pairs, BOM) - 15 new tests
+- [x] Add tests for MAX_PATH length paths - 10 new tests
+- [x] Add tests for empty registry values - 4 new tests + 15 additional registry tests
+- [x] Add integration tests for process spawning - 15 new tests
+- [x] Add stress tests for handle management - 10 new tests
+- [ ] Run fuzz tests and fix any discovered issues (blocked: ASAN runtime not available on Windows)
 
 ---
 

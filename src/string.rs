@@ -781,4 +781,125 @@ mod tests {
         assert_eq!(ws.to_string_lossy(), "Hello");
         // Pooled buffer is now owned by WideString, can't return to pool
     }
+
+    // ============================================================================
+    // Unicode Edge Cases Tests
+    // ============================================================================
+
+    #[test]
+    fn test_unicode_surrogate_pairs() {
+        // Characters outside the BMP (Basic Multilingual Plane) require surrogate pairs
+        // 🎉 U+1F389 = surrogate pair D83C DF89
+        let emoji = "🎉";
+        let wide = to_wide(emoji);
+        assert_eq!(wide.len(), 3); // 2 UTF-16 units + null terminator
+        assert_eq!(wide[0], 0xD83C); // High surrogate
+        assert_eq!(wide[1], 0xDF89); // Low surrogate
+        assert_eq!(wide[2], 0); // Null terminator
+
+        let back = from_wide(&wide).unwrap();
+        assert_eq!(back, emoji);
+    }
+
+    #[test]
+    fn test_unicode_multiple_surrogate_pairs() {
+        // Multiple emoji that require surrogate pairs
+        let text = "Hello 🌍🌎🌏!";
+        let wide = to_wide(text);
+        let back = from_wide(&wide).unwrap();
+        assert_eq!(back, text);
+    }
+
+    #[test]
+    fn test_unicode_bom() {
+        // Byte Order Mark U+FEFF
+        let with_bom = "\u{FEFF}Hello";
+        let wide = to_wide(with_bom);
+        assert_eq!(wide[0], 0xFEFF); // BOM
+        let back = from_wide(&wide).unwrap();
+        assert_eq!(back, with_bom);
+    }
+
+    #[test]
+    fn test_unicode_various_scripts() {
+        // Test various Unicode scripts
+        let texts = [
+            "ASCII only",
+            "日本語テスト",          // Japanese
+            "한국어 테스트",         // Korean
+            "中文测试",              // Chinese
+            "Тест на русском",       // Russian Cyrillic
+            "Ελληνικά",              // Greek
+            "עברית",                 // Hebrew
+            "العربية",               // Arabic
+            "हिन्दी",                // Hindi
+            "ไทย",                   // Thai
+        ];
+
+        for text in texts {
+            let wide = to_wide(text);
+            let back = from_wide(&wide).unwrap();
+            assert_eq!(back, text, "Failed roundtrip for: {}", text);
+        }
+    }
+
+    #[test]
+    fn test_unicode_zero_width_chars() {
+        // Zero-width joiner U+200D, zero-width non-joiner U+200C
+        let text = "a\u{200D}b\u{200C}c";
+        let wide = to_wide(text);
+        let back = from_wide(&wide).unwrap();
+        assert_eq!(back, text);
+    }
+
+    #[test]
+    fn test_unicode_combining_characters() {
+        // e followed by combining acute accent = é
+        let text = "e\u{0301}";
+        let wide = to_wide(text);
+        let back = from_wide(&wide).unwrap();
+        assert_eq!(back, text);
+    }
+
+    #[test]
+    fn test_unicode_emoji_sequences() {
+        // Family emoji with ZWJ sequence
+        let text = "👨\u{200D}👩\u{200D}👧";
+        let wide = to_wide(text);
+        let back = from_wide(&wide).unwrap();
+        assert_eq!(back, text);
+    }
+
+    #[test]
+    fn test_invalid_utf16_lone_high_surrogate() {
+        // A lone high surrogate (0xD800-0xDBFF) without following low surrogate
+        let invalid: Vec<u16> = vec![0xD800, 0];
+        let result = from_wide(&invalid);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_invalid_utf16_lone_low_surrogate() {
+        // A lone low surrogate (0xDC00-0xDFFF) without preceding high surrogate
+        let invalid: Vec<u16> = vec![0xDC00, 0];
+        let result = from_wide(&invalid);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_invalid_utf16_reversed_surrogates() {
+        // Low surrogate followed by high surrogate (reversed)
+        let invalid: Vec<u16> = vec![0xDC00, 0xD800, 0];
+        let result = from_wide(&invalid);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_wide_string_sso_with_surrogate_pairs() {
+        // Emoji that requires surrogate pair should work with SSO
+        let ws = WideString::new("🎉");
+        assert!(ws.is_inline());
+        assert_eq!(ws.len(), 2); // 2 UTF-16 units
+        assert_eq!(ws.to_string_lossy(), "🎉");
+    }
 }

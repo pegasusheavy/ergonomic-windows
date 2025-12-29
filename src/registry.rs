@@ -536,3 +536,377 @@ pub fn set_dword(root: RootKey, path: &str, name: &str, value: u32) -> Result<()
     let key = Key::create(root, path, Access::WRITE)?;
     key.set_value(name, &Value::Dword(value))
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // Test registry path under HKCU for tests (doesn't require admin)
+    const TEST_KEY_PATH: &str = "Software\\ErgonomicWindowsTest";
+
+    fn cleanup_test_key() {
+        // Try to delete the test key and ignore errors
+        if let Ok(key) = Key::open(RootKey::CURRENT_USER, "Software", Access::WRITE) {
+            let _ = key.delete_subkey("ErgonomicWindowsTest");
+        }
+    }
+
+    // ============================================================================
+    // Empty Registry Value Tests
+    // ============================================================================
+
+    #[test]
+    fn test_empty_string_value() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            // Set empty string
+            let result = key.set_value("empty_string", &Value::String(String::new()));
+            assert!(result.is_ok());
+
+            // Read it back
+            let value = key.get_value("empty_string");
+            assert!(value.is_ok());
+            match value.unwrap() {
+                Value::String(s) => assert!(s.is_empty(), "Expected empty string, got: {:?}", s),
+                other => panic!("Expected String, got: {:?}", other),
+            }
+        }
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_empty_expand_string_value() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            // Set empty expand string
+            let result = key.set_value("empty_expand", &Value::ExpandString(String::new()));
+            assert!(result.is_ok());
+
+            // Read it back
+            let value = key.get_value("empty_expand");
+            assert!(value.is_ok());
+            match value.unwrap() {
+                Value::ExpandString(s) => assert!(s.is_empty()),
+                other => panic!("Expected ExpandString, got: {:?}", other),
+            }
+        }
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_empty_binary_value() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            // Note: Windows registry may not allow truly empty binary values (0 bytes)
+            // Test with a single byte instead
+            let result = key.set_value("single_byte_binary", &Value::Binary(vec![0]));
+            assert!(result.is_ok());
+
+            // Read it back
+            let value = key.get_value("single_byte_binary");
+            assert!(value.is_ok());
+            match value.unwrap() {
+                Value::Binary(b) => assert_eq!(b, vec![0]),
+                other => panic!("Expected Binary, got: {:?}", other),
+            }
+
+            // Try empty binary - this might fail on some Windows versions
+            // Just verify it doesn't panic, whether it succeeds or fails
+            let _ = key.set_value("empty_binary", &Value::Binary(vec![]));
+        }
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_empty_multi_string_value() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            // Set empty multi-string
+            let result = key.set_value("empty_multi", &Value::MultiString(vec![]));
+            assert!(result.is_ok());
+
+            // Read it back
+            let value = key.get_value("empty_multi");
+            assert!(value.is_ok());
+            match value.unwrap() {
+                Value::MultiString(v) => assert!(v.is_empty()),
+                other => panic!("Expected MultiString, got: {:?}", other),
+            }
+        }
+
+        cleanup_test_key();
+    }
+
+    // ============================================================================
+    // Registry Value Type Tests
+    // ============================================================================
+
+    #[test]
+    fn test_dword_value() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            // Test various DWORD values
+            let test_values = [0u32, 1, 42, u32::MAX];
+
+            for &val in &test_values {
+                let result = key.set_value("dword_test", &Value::Dword(val));
+                assert!(result.is_ok());
+
+                let read = key.get_value("dword_test");
+                assert!(read.is_ok());
+                assert_eq!(read.unwrap().as_dword(), Some(val));
+            }
+        }
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_qword_value() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            let test_values = [0u64, 1, 42, u64::MAX];
+
+            for &val in &test_values {
+                let result = key.set_value("qword_test", &Value::Qword(val));
+                assert!(result.is_ok());
+
+                let read = key.get_value("qword_test");
+                assert!(read.is_ok());
+                assert_eq!(read.unwrap().as_qword(), Some(val));
+            }
+        }
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_string_with_special_characters() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            let test_strings = [
+                "Simple ASCII",
+                "With\ttab",
+                "With\nnewline",
+                "Unicode: 日本語",
+                "Emoji: 🎉",
+                "Path: C:\\Windows\\System32",
+            ];
+
+            for (i, &s) in test_strings.iter().enumerate() {
+                let name = format!("string_test_{}", i);
+                let result = key.set_value(&name, &Value::String(s.to_string()));
+                assert!(result.is_ok(), "Failed to set: {}", s);
+
+                let read = key.get_value(&name);
+                assert!(read.is_ok());
+                assert_eq!(read.unwrap().as_string(), Some(s));
+            }
+        }
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_multi_string_value() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            let strings = vec![
+                "First".to_string(),
+                "Second".to_string(),
+                "Third with space".to_string(),
+            ];
+
+            let result = key.set_value("multi_test", &Value::MultiString(strings.clone()));
+            assert!(result.is_ok());
+
+            let read = key.get_value("multi_test");
+            assert!(read.is_ok());
+            match read.unwrap() {
+                Value::MultiString(v) => assert_eq!(v, strings),
+                other => panic!("Expected MultiString, got: {:?}", other),
+            }
+        }
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_binary_value() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            let data: Vec<u8> = (0..=255).collect();
+
+            let result = key.set_value("binary_test", &Value::Binary(data.clone()));
+            assert!(result.is_ok());
+
+            let read = key.get_value("binary_test");
+            assert!(read.is_ok());
+            match read.unwrap() {
+                Value::Binary(v) => assert_eq!(v, data),
+                other => panic!("Expected Binary, got: {:?}", other),
+            }
+        }
+
+        cleanup_test_key();
+    }
+
+    // ============================================================================
+    // Registry Key Operations Tests
+    // ============================================================================
+
+    #[test]
+    fn test_create_and_delete_subkey() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            // Create subkey
+            let result = key.create_subkey("SubKey", Access::ALL);
+            assert!(result.is_ok());
+
+            // Delete subkey
+            let result = key.delete_subkey("SubKey");
+            assert!(result.is_ok());
+        }
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_enumerate_subkeys() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            // Create some subkeys
+            let _ = key.create_subkey("SubA", Access::ALL);
+            let _ = key.create_subkey("SubB", Access::ALL);
+            let _ = key.create_subkey("SubC", Access::ALL);
+
+            // Enumerate them
+            let subkeys = key.subkeys();
+            assert!(subkeys.is_ok());
+            let subkeys = subkeys.unwrap();
+            assert!(subkeys.contains(&"SubA".to_string()));
+            assert!(subkeys.contains(&"SubB".to_string()));
+            assert!(subkeys.contains(&"SubC".to_string()));
+        }
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_enumerate_values() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            // Create some values
+            let _ = key.set_value("ValA", &Value::Dword(1));
+            let _ = key.set_value("ValB", &Value::String("test".to_string()));
+            let _ = key.set_value("ValC", &Value::Binary(vec![1, 2, 3]));
+
+            // Enumerate them
+            let values = key.values();
+            assert!(values.is_ok());
+            let values = values.unwrap();
+            assert!(values.contains(&"ValA".to_string()));
+            assert!(values.contains(&"ValB".to_string()));
+            assert!(values.contains(&"ValC".to_string()));
+        }
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_delete_value() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            // Create a value
+            let _ = key.set_value("ToDelete", &Value::Dword(42));
+
+            // Verify it exists
+            assert!(key.get_value("ToDelete").is_ok());
+
+            // Delete it
+            let result = key.delete_value("ToDelete");
+            assert!(result.is_ok());
+
+            // Verify it's gone
+            assert!(key.get_value("ToDelete").is_err());
+        }
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_nonexistent_value() {
+        cleanup_test_key();
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+            let result = key.get_value("NonExistent");
+            assert!(result.is_err());
+        }
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_convenience_functions() {
+        cleanup_test_key();
+
+        // Test set_string and get_string
+        let result = set_string(RootKey::CURRENT_USER, TEST_KEY_PATH, "conv_string", "hello");
+        assert!(result.is_ok());
+
+        let value = get_string(RootKey::CURRENT_USER, TEST_KEY_PATH, "conv_string");
+        assert!(value.is_ok());
+        assert_eq!(value.unwrap(), "hello");
+
+        // Test set_dword and get_dword
+        let result = set_dword(RootKey::CURRENT_USER, TEST_KEY_PATH, "conv_dword", 12345);
+        assert!(result.is_ok());
+
+        let value = get_dword(RootKey::CURRENT_USER, TEST_KEY_PATH, "conv_dword");
+        assert!(value.is_ok());
+        assert_eq!(value.unwrap(), 12345);
+
+        cleanup_test_key();
+    }
+
+    #[test]
+    fn test_access_flags_combination() {
+        let combined = Access::READ.with(Access::WRITE);
+        assert!((combined.0.0 & KEY_READ.0) != 0);
+        assert!((combined.0.0 & KEY_WRITE.0) != 0);
+
+        let with_32bit = Access::READ.with(Access::WOW64_32);
+        assert!((with_32bit.0.0 & KEY_WOW64_32KEY.0) != 0);
+    }
+
+    #[test]
+    fn test_value_constructors() {
+        let s = Value::string("test");
+        assert_eq!(s.as_string(), Some("test"));
+
+        let d = Value::dword(42);
+        assert_eq!(d.as_dword(), Some(42));
+
+        let q = Value::qword(1234567890);
+        assert_eq!(q.as_qword(), Some(1234567890));
+
+        let b = Value::binary(vec![1, 2, 3]);
+        assert_eq!(b.as_binary(), Some(&[1u8, 2, 3][..]));
+    }
+}

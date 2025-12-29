@@ -409,6 +409,7 @@ pub fn get_temp_directory() -> Result<PathBuf> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::env;
 
     #[test]
     fn test_file_attributes() {
@@ -416,5 +417,150 @@ mod tests {
         assert!(attrs.is_readonly());
         assert!(attrs.is_hidden());
         assert!(!attrs.is_directory());
+    }
+
+    // ============================================================================
+    // MAX_PATH Length Tests
+    // ============================================================================
+
+    /// MAX_PATH on Windows is 260 characters including null terminator
+    const MAX_PATH_LEN: usize = 260;
+
+    #[test]
+    fn test_path_near_max_path_limit() {
+        // Create a path that's just under MAX_PATH (259 chars + null = 260)
+        let temp = env::temp_dir();
+        let temp_str = temp.to_string_lossy();
+
+        // Calculate how many characters we can use for the filename
+        // Path format: C:\temp\<filename>
+        let remaining = MAX_PATH_LEN - 1 - temp_str.len() - 1; // -1 for null, -1 for separator
+
+        if remaining > 10 {
+            let filename = "a".repeat(remaining.min(200));
+            let path = temp.join(&filename);
+
+            // Test that we can create a WideString for paths near MAX_PATH
+            let wide = WideString::from_path(&path);
+            assert!(!wide.is_empty());
+        }
+    }
+
+    #[test]
+    fn test_path_at_max_path_boundary() {
+        // Test path exactly at 259 characters (MAX_PATH - 1 for null)
+        let base = "C:\\";
+        let remaining = 259 - base.len();
+        let long_component = "a".repeat(remaining);
+        let path_str = format!("{}{}", base, long_component);
+        let path = Path::new(&path_str);
+
+        let wide = WideString::from_path(path);
+        assert_eq!(wide.len(), 259);
+    }
+
+    #[test]
+    fn test_path_over_max_path() {
+        // Test path that exceeds MAX_PATH
+        // Windows can handle long paths with \\?\ prefix
+        let base = "C:\\";
+        let long_component = "a".repeat(300);
+        let path_str = format!("{}{}", base, long_component);
+        let path = Path::new(&path_str);
+
+        // Should not panic - WideString should handle it
+        let wide = WideString::from_path(path);
+        assert!(wide.len() > MAX_PATH_LEN);
+    }
+
+    #[test]
+    fn test_extended_length_path_prefix() {
+        // Extended-length paths use \\?\ prefix and can exceed MAX_PATH
+        let long_name = "a".repeat(300);
+        let path_str = format!("\\\\?\\C:\\{}", long_name);
+        let path = Path::new(&path_str);
+
+        let wide = WideString::from_path(path);
+        // The prefix "\\?\" is 4 chars, "C:\" is 3 chars = 7 chars + 300 = 307
+        assert!(wide.len() > 300);
+    }
+
+    #[test]
+    fn test_unc_path() {
+        // UNC paths: \\server\share\path
+        let path = Path::new("\\\\server\\share\\folder\\file.txt");
+        let wide = WideString::from_path(path);
+        let back = wide.to_string_lossy();
+        assert!(back.starts_with("\\\\server\\share"));
+    }
+
+    #[test]
+    fn test_deep_nested_path() {
+        // Create a deeply nested path
+        let mut path_buf = PathBuf::from("C:\\");
+        for _ in 0..50 {
+            path_buf.push("subdir");
+        }
+        path_buf.push("file.txt");
+
+        let wide = WideString::from_path(&path_buf);
+        assert!(!wide.is_empty());
+
+        let back = wide.to_string_lossy();
+        assert!(back.contains("subdir"));
+    }
+
+    #[test]
+    fn test_path_with_special_windows_names() {
+        // Windows has reserved names like CON, PRN, AUX, NUL, etc.
+        // These paths are technically valid to encode, even if they behave specially
+        let reserved_names = ["CON", "PRN", "AUX", "NUL", "COM1", "LPT1"];
+
+        for name in reserved_names {
+            let path = Path::new(name);
+            let wide = WideString::from_path(path);
+            let back = wide.to_string_lossy();
+            assert_eq!(back, name, "Failed for reserved name: {}", name);
+        }
+    }
+
+    #[test]
+    fn test_path_with_unicode_characters() {
+        // Paths with various Unicode characters
+        let paths = [
+            "C:\\日本語\\ファイル.txt",
+            "C:\\Données\\fichier.txt",
+            "C:\\Документы\\файл.txt",
+            "C:\\数据\\文件.txt",
+        ];
+
+        for path_str in paths {
+            let path = Path::new(path_str);
+            let wide = WideString::from_path(path);
+            let back = wide.to_string_lossy();
+            assert_eq!(back, path_str, "Failed for path: {}", path_str);
+        }
+    }
+
+    #[test]
+    fn test_system_directory_path_length() {
+        // Verify system directories return valid paths
+        if let Ok(sys_dir) = get_system_directory() {
+            assert!(sys_dir.to_string_lossy().len() < MAX_PATH_LEN);
+        }
+    }
+
+    #[test]
+    fn test_temp_directory_path_length() {
+        if let Ok(temp_dir) = get_temp_directory() {
+            assert!(temp_dir.to_string_lossy().len() < MAX_PATH_LEN);
+        }
+    }
+
+    #[test]
+    fn test_windows_directory_path_length() {
+        if let Ok(win_dir) = get_windows_directory() {
+            assert!(win_dir.to_string_lossy().len() < MAX_PATH_LEN);
+        }
     }
 }
