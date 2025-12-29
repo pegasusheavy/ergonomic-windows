@@ -58,6 +58,18 @@ cargo flamegraph --bench string_bench -- --bench
 
 ## Running Fuzz Tests
 
+### Prerequisites (Windows)
+
+```powershell
+# Install LLVM (includes ASAN runtime)
+winget install LLVM.LLVM
+
+# Add ASAN runtime to PATH (required for fuzzing)
+$env:Path = "C:\Program Files\LLVM\lib\clang\21\lib\windows;C:\Program Files\LLVM\bin;$env:Path"
+```
+
+### Running
+
 ```bash
 # Install cargo-fuzz (requires nightly)
 cargo install cargo-fuzz
@@ -343,7 +355,7 @@ pool.put(wide);
 - [x] Add tests for empty registry values - 4 new tests + 15 additional registry tests
 - [x] Add integration tests for process spawning - 15 new tests
 - [x] Add stress tests for handle management - 10 new tests
-- [ ] Run fuzz tests and fix any discovered issues (blocked: ASAN runtime not available on Windows)
+- [x] Run fuzz tests and fix any discovered issues - ASAN runtime now available via LLVM 21.1.8
 
 ---
 
