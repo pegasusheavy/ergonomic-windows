@@ -77,8 +77,18 @@ some_api(ptr); <span class="text-gray-500">// ❌ Use after free!</span></code><
   </div>
 
   <h2 id="unsafe-functions" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Unsafe Functions</h2>
+
+  <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+    <h4 class="font-semibold text-blue-800 mb-2">Two Types of Unsafe</h4>
+    <p class="text-sm text-blue-700">
+      <strong>FFI-only unsafe:</strong> Required because it's a foreign function call, but semantically safe
+      (e.g., <code>GetCurrentProcessId()</code>).<br>
+      <strong>Truly unsafe:</strong> The caller must uphold invariants (e.g., raw pointer validity).
+    </p>
+  </div>
+
   <p class="text-gray-700 mb-4">
-    The following functions are marked <code class="bg-gray-100 px-1 rounded">unsafe</code> because they require
+    These functions are marked <code class="bg-gray-100 px-1 rounded">unsafe</code> because they require
     the caller to uphold certain invariants:
   </p>
 
@@ -86,6 +96,11 @@ some_api(ptr); <span class="text-gray-500">// ❌ Use after free!</span></code><
     <div class="border border-red-200 rounded-lg p-4 bg-red-50">
       <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">from_wide_ptr(ptr: *const u16)</h4>
       <p class="text-gray-700 text-sm mb-2">Converts a raw UTF-16 pointer to a String.</p>
+      <div class="bg-green-100 rounded p-2 mb-2">
+        <p class="text-xs text-green-700">
+          <strong>✓ Safe alternative:</strong> Use <code>from_wide_buffer(&amp;slice)</code> instead when you have a slice.
+        </p>
+      </div>
       <h5 class="font-semibold text-gray-900 text-sm mb-1">Caller must ensure:</h5>
       <ul class="text-xs text-gray-600 list-disc list-inside space-y-1">
         <li>ptr is non-null and valid for reads</li>

@@ -56,10 +56,20 @@
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">~64 ns</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">1</td>
         </tr>
+        <tr class="bg-green-50">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">WideString::new("Hello") <span class="text-green-600">(SSO)</span></td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">~12 ns</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-bold">0</td>
+        </tr>
         <tr>
-          <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">WideString::new("Hello")</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">WideString::new (long string)</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">~55 ns</td>
           <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">1</td>
+        </tr>
+        <tr class="bg-green-50">
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">WideStringPool::get() <span class="text-green-600">(pooled)</span></td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">~20 ns</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-bold">0*</td>
         </tr>
         <tr>
           <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">to_wide (10,000 chars)</td>
@@ -68,6 +78,15 @@
         </tr>
       </tbody>
     </table>
+    <p class="text-xs text-gray-500 mt-2">* Zero allocations after warmup when buffer is reused from pool</p>
+  </div>
+
+  <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-8">
+    <h4 class="font-semibold text-blue-800 mb-2">🚀 Small String Optimization (SSO)</h4>
+    <p class="text-sm text-blue-700">
+      <code>WideString</code> stores strings ≤22 UTF-16 code units inline without heap allocation.
+      This covers most filenames, registry keys, and API parameters.
+    </p>
   </div>
 
   <h2 id="string-tips" class="text-2xl font-bold text-gray-900 mt-12 mb-4">String Conversion Tips</h2>
@@ -106,6 +125,25 @@
   </div>
 
   <h2 id="allocation-tips" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Reducing Allocations</h2>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Use WideStringPool for high-throughput</h3>
+  <p class="text-gray-700 mb-4">
+    For loops that process many strings, use <code class="bg-gray-100 px-1 rounded">WideStringPool</code>
+    to eliminate allocation overhead entirely:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-gray-500">// Pre-allocate a pool of buffers</span>
+<span class="text-purple-400">let mut</span> pool = WideStringPool::with_preallocated(16, 256);
+
+<span class="text-purple-400">for</span> filename <span class="text-purple-400">in</span> files &#123;
+    <span class="text-purple-400">let</span> pooled = pool.get(filename); <span class="text-gray-500">// Zero allocations!</span>
+    
+    <span class="text-gray-500">// Use pooled.as_pcwstr() with Windows APIs</span>
+    some_api(pooled.as_pcwstr());
+    
+    pool.put(pooled); <span class="text-gray-500">// Return buffer for reuse</span>
+&#125;</code></pre>
+  </div>
 
   <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Keep WideStrings alive</h3>
   <p class="text-gray-700 mb-4">
@@ -163,8 +201,30 @@ cargo run --bin memory-profile --features dhat-heap
     <pre><code class="text-gray-100"><span class="text-gray-500"># Install cargo-flamegraph</span>
 cargo install flamegraph
 
-<span class="text-gray-500"># Generate flamegraph</span>
-cargo flamegraph --bin your-binary</code></pre>
+<span class="text-gray-500"># Generate flamegraph (requires Administrator on Windows)</span>
+cargo flamegraph --bin cpu-profile</code></pre>
+  </div>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Fuzz testing</h3>
+  <p class="text-gray-700 mb-4">
+    The crate includes fuzz tests to find edge cases and potential crashes:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-gray-500"># Install cargo-fuzz (requires nightly)</span>
+cargo install cargo-fuzz
+
+<span class="text-gray-500"># On Windows, install LLVM for ASAN support</span>
+winget install LLVM.LLVM
+
+<span class="text-gray-500"># Run fuzz tests</span>
+cd fuzz
+cargo +nightly fuzz run fuzz_strings -- -max_total_time=60</code></pre>
+  </div>
+  <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+    <p class="text-sm text-green-700">
+      <strong>✓ Fuzz tested:</strong> All string conversion functions have been fuzz tested with
+      millions of inputs including Unicode edge cases, embedded nulls, and invalid UTF-16.
+    </p>
   </div>
 
   <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mt-8">

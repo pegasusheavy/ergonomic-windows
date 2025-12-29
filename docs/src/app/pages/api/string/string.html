@@ -49,6 +49,30 @@ assert_eq!(s, <span class="text-green-400">"Hello"</span>);</code></pre>
     </div>
   </section>
 
+  <!-- from_wide_buffer -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">from_wide_buffer</h2>
+    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">pub fn</span> <span class="text-yellow-400">from_wide_buffer</span>(buffer: &amp;[u16]) -> Result&lt;String&gt;</code></pre>
+    </div>
+    <p class="text-gray-700 mb-4">
+      Converts a UTF-16 buffer to a Rust String, stopping at the first null or buffer end.
+      This is a <strong>completely safe</strong> alternative to <code>from_wide_ptr</code> for fixed-size buffers.
+    </p>
+    <h4 class="font-semibold text-gray-900 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-gray-500">// A buffer from a Windows API with potential null terminator</span>
+<span class="text-purple-400">let</span> buffer: [u16; 10] = [72, 101, 108, 108, 111, 0, 0, 0, 0, 0];
+<span class="text-purple-400">let</span> s = from_wide_buffer(&amp;buffer)?;
+assert_eq!(s, <span class="text-green-400">"Hello"</span>);</code></pre>
+    </div>
+    <div class="bg-green-50 border-l-4 border-green-500 p-4 mt-4">
+      <p class="text-sm text-green-700">
+        <strong>✓ Safe:</strong> No <code>unsafe</code> required. Use this instead of <code>from_wide_ptr</code> when you have a slice.
+      </p>
+    </div>
+  </section>
+
   <!-- from_wide_ptr -->
   <section class="mb-12">
     <h2 class="text-2xl font-bold text-gray-900 mb-4">from_wide_ptr</h2>
@@ -57,6 +81,7 @@ assert_eq!(s, <span class="text-green-400">"Hello"</span>);</code></pre>
     </div>
     <p class="text-gray-700 mb-4">
       Converts a null-terminated UTF-16 pointer to a Rust String.
+      <strong>Prefer <code>from_wide_buffer</code></strong> when you have a slice instead of a raw pointer.
     </p>
     <div class="bg-red-50 border-l-4 border-red-500 p-4 mt-4">
       <h4 class="font-semibold text-red-800 mb-2">⚠️ Safety Requirements</h4>
@@ -74,12 +99,14 @@ assert_eq!(s, <span class="text-green-400">"Hello"</span>);</code></pre>
   <section class="mb-12">
     <h2 class="text-2xl font-bold text-gray-900 mb-4">WideString</h2>
     <p class="text-gray-700 mb-4">
-      A wrapper for passing wide strings to Windows APIs. Owns the buffer and provides a pointer.
+      A wrapper for passing wide strings to Windows APIs. Features <strong>Small String Optimization (SSO)</strong>
+      for strings ≤22 UTF-16 code units, storing them inline without heap allocation.
     </p>
-    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
-      <pre><code class="text-gray-100"><span class="text-purple-400">pub struct</span> WideString &#123;
-    buffer: Vec&lt;u16&gt;,
-&#125;</code></pre>
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+      <p class="text-sm text-blue-700">
+        <strong>🚀 SSO:</strong> Short strings (≤22 chars) are stored inline with zero heap allocations.
+        Use <code>is_inline()</code> to check if a string uses inline storage.
+      </p>
     </div>
 
     <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Methods</h3>
@@ -119,15 +146,83 @@ assert_eq!(s, <span class="text-green-400">"Hello"</span>);</code></pre>
         <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">to_string_lossy(&amp;self) -> String</h4>
         <p class="text-gray-600 text-sm">Converts back to a Rust String, replacing invalid sequences.</p>
       </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_inline(&amp;self) -> bool</h4>
+        <p class="text-gray-600 text-sm">Returns true if the string is stored inline (SSO), false if heap-allocated.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_empty(&amp;self) -> bool</h4>
+        <p class="text-gray-600 text-sm">Returns true if the string is empty.</p>
+      </div>
     </div>
 
     <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
     <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-      <pre><code class="text-gray-100"><span class="text-purple-400">let</span> ws = WideString::new(<span class="text-green-400">"Hello"</span>);
+      <pre><code class="text-gray-100"><span class="text-gray-500">// Short string - uses inline storage (no heap allocation)</span>
+<span class="text-purple-400">let</span> short = WideString::new(<span class="text-green-400">"Hello"</span>);
+assert!(short.is_inline()); <span class="text-gray-500">// true - stored inline</span>
+
+<span class="text-gray-500">// Long string - uses heap allocation</span>
+<span class="text-purple-400">let</span> long = WideString::new(&amp;<span class="text-green-400">"a"</span>.repeat(100));
+assert!(!long.is_inline()); <span class="text-gray-500">// false - heap allocated</span>
 
 <span class="text-gray-500">// Use with Windows APIs</span>
 <span class="text-purple-400">unsafe</span> &#123;
-    SomeWindowsApi(ws.as_pcwstr());
+    SomeWindowsApi(short.as_pcwstr());
+&#125;</code></pre>
+    </div>
+  </section>
+
+  <!-- WideStringPool -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">WideStringPool</h2>
+    <p class="text-gray-700 mb-4">
+      An object pool for reusing UTF-16 string buffers in high-throughput scenarios.
+      Eliminates allocation overhead by recycling buffers.
+    </p>
+    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-4">
+      <p class="text-sm text-yellow-700">
+        <strong>⚡ Performance:</strong> Use for loops that convert many strings to avoid repeated allocations.
+      </p>
+    </div>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Methods</h3>
+
+    <div class="space-y-6">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new() -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates a new empty pool.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">with_preallocated(count: usize, capacity: usize) -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates a pool with pre-allocated buffers.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">get(&amp;mut self, s: &amp;str) -> PooledWideString</h4>
+        <p class="text-gray-600 text-sm">Gets a pooled buffer containing the string.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">put(&amp;mut self, pooled: PooledWideString)</h4>
+        <p class="text-gray-600 text-sm">Returns a buffer to the pool for reuse.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">let mut</span> pool = WideStringPool::with_preallocated(10, 256);
+
+<span class="text-gray-500">// Process many files without allocation overhead</span>
+<span class="text-purple-400">for</span> filename <span class="text-purple-400">in</span> &amp;[<span class="text-green-400">"file1.txt"</span>, <span class="text-green-400">"file2.txt"</span>, <span class="text-green-400">"file3.txt"</span>] &#123;
+    <span class="text-purple-400">let</span> pooled = pool.get(filename);
+
+    <span class="text-gray-500">// Use pooled.as_pcwstr() with Windows API</span>
+
+    pool.put(pooled); <span class="text-gray-500">// Return to pool for reuse</span>
 &#125;</code></pre>
     </div>
   </section>
