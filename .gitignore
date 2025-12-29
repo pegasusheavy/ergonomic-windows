@@ -37,3 +37,8 @@ Desktop.ini
 # Backup files
 *.bak
 *.orig
+
+# Node.js / Docs site
+docs/node_modules/
+docs/dist/
+docs/.angular/
