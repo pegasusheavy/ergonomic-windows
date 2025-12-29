@@ -137,10 +137,10 @@
 
 <span class="text-purple-400">for</span> filename <span class="text-purple-400">in</span> files &#123;
     <span class="text-purple-400">let</span> pooled = pool.get(filename); <span class="text-gray-500">// Zero allocations!</span>
-    
+
     <span class="text-gray-500">// Use pooled.as_pcwstr() with Windows APIs</span>
     some_api(pooled.as_pcwstr());
-    
+
     pool.put(pooled); <span class="text-gray-500">// Return buffer for reuse</span>
 &#125;</code></pre>
   </div>

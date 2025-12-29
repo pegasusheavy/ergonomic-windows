@@ -343,9 +343,9 @@ impl WideString {
         }
     }
 
-    /// Creates a `WideString` from a pre-existing Vec<u16>.
+    /// Creates a `WideString` from a pre-existing `Vec<u16>`.
     ///
-    /// The Vec should be null-terminated.
+    /// The `Vec` should be null-terminated.
     #[inline]
     pub fn from_vec(vec: Vec<u16>) -> Self {
         if vec.len() <= INLINE_CAP {

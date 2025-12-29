@@ -596,24 +596,30 @@ mod tests {
     fn test_empty_binary_value() {
         cleanup_test_key();
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
-            // Note: Windows registry may not allow truly empty binary values (0 bytes)
-            // Test with a single byte instead
-            let result = key.set_value("single_byte_binary", &Value::Binary(vec![0]));
-            assert!(result.is_ok());
+        // Use expect to get better error messages
+        let key = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL)
+            .expect("Failed to create test registry key");
 
-            // Read it back
-            let value = key.get_value("single_byte_binary");
-            assert!(value.is_ok());
-            match value.unwrap() {
-                Value::Binary(b) => assert_eq!(b, vec![0]),
-                other => panic!("Expected Binary, got: {:?}", other),
-            }
+        // Note: Windows registry may not allow truly empty binary values (0 bytes)
+        // Test with a single byte instead
+        let result = key.set_value("single_byte_binary", &Value::Binary(vec![0]));
+        assert!(
+            result.is_ok(),
+            "Failed to set single_byte_binary: {:?}",
+            result
+        );
 
-            // Try empty binary - this might fail on some Windows versions
-            // Just verify it doesn't panic, whether it succeeds or fails
-            let _ = key.set_value("empty_binary", &Value::Binary(vec![]));
+        // Read it back
+        let value = key.get_value("single_byte_binary");
+        assert!(value.is_ok(), "Failed to get single_byte_binary: {:?}", value);
+        match value.unwrap() {
+            Value::Binary(b) => assert_eq!(b, vec![0]),
+            other => panic!("Expected Binary, got: {:?}", other),
         }
+
+        // Try empty binary - this might fail on some Windows versions
+        // Just verify it doesn't panic, whether it succeeds or fails
+        let _ = key.set_value("empty_binary", &Value::Binary(vec![]));
 
         cleanup_test_key();
     }
