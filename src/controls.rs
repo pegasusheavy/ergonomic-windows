@@ -3,6 +3,9 @@
 //! Provides safe wrappers for Windows common controls including buttons,
 //! edit boxes, list views, progress bars, and more.
 
+#![allow(clippy::new_ret_no_self)] // Controls return Control, not Self - by design
+#![allow(clippy::too_many_arguments)] // Control constructors need many parameters
+
 use crate::error::{Error, Result};
 use crate::string::WideString;
 use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, WPARAM};
@@ -547,8 +550,8 @@ impl ProgressBar {
         let mut win_style = WS_CHILD | WS_VISIBLE;
         match style {
             ProgressStyle::Standard => {}
-            ProgressStyle::Smooth => win_style |= WINDOW_STYLE(PBS_SMOOTH as u32),
-            ProgressStyle::Marquee => win_style |= WINDOW_STYLE(PBS_MARQUEE as u32),
+            ProgressStyle::Smooth => win_style |= WINDOW_STYLE(PBS_SMOOTH),
+            ProgressStyle::Marquee => win_style |= WINDOW_STYLE(PBS_MARQUEE),
         }
 
         // SAFETY: CreateWindowExW is safe with valid parameters

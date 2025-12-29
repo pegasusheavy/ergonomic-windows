@@ -3,6 +3,8 @@
 //! Provides safe wrappers for hardware-accelerated 2D graphics rendering
 //! and high-quality text rendering using Direct2D and DirectWrite.
 
+#![allow(clippy::too_many_arguments)] // Drawing functions need many coordinate parameters
+
 use crate::error::Result;
 use windows::Foundation::Numerics::Matrix3x2;
 use windows::Win32::Foundation::HWND;
@@ -90,7 +92,7 @@ impl Color {
     /// Transparent color.
     pub const TRANSPARENT: Self = Self::rgba(0.0, 0.0, 0.0, 0.0);
 
-    fn to_d2d1(&self) -> D2D1_COLOR_F {
+    fn as_d2d1(&self) -> D2D1_COLOR_F {
         D2D1_COLOR_F {
             r: self.r,
             g: self.g,
@@ -229,7 +231,7 @@ impl RenderTarget {
     pub fn clear(&self, color: Color) {
         // SAFETY: Clear is safe
         unsafe {
-            self.target.Clear(Some(&color.to_d2d1()));
+            self.target.Clear(Some(&color.as_d2d1()));
         }
     }
 
@@ -243,7 +245,7 @@ impl RenderTarget {
         // SAFETY: CreateSolidColorBrush is safe
         let brush = unsafe {
             self.target
-                .CreateSolidColorBrush(&color.to_d2d1(), Some(&props))?
+                .CreateSolidColorBrush(&color.as_d2d1(), Some(&props))?
         };
 
         Ok(SolidBrush { brush })
@@ -466,7 +468,7 @@ impl SolidBrush {
     pub fn set_color(&self, color: Color) {
         // SAFETY: SetColor is safe
         unsafe {
-            self.brush.SetColor(&color.to_d2d1());
+            self.brush.SetColor(&color.as_d2d1());
         }
     }
 

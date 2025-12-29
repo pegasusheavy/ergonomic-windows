@@ -19,7 +19,7 @@ ergonomic-windows = &#123; version = "0.1", features = ["webview2"] &#125;</code
   <section class="mb-12">
     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Overview</h2>
     <p class="text-gray-600 mb-4">
-      WebView2 allows you to embed web content (HTML, CSS, JavaScript) in your native Windows application. 
+      WebView2 allows you to embed web content (HTML, CSS, JavaScript) in your native Windows application.
       It uses the same rendering engine as Microsoft Edge (Chromium).
     </p>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -75,19 +75,19 @@ webview.execute_script("document.body.style.background = 'lightblue';")?;</code>
     <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">let webview = WebViewBuilder::new()
     // Initial URL
     .with_url("https://example.com")
-    
+
     // User data folder (browser profile location)
     .with_user_data_folder("C:\\MyApp\\WebViewData")
-    
+
     // Enable/disable developer tools (F12)
     .with_dev_tools(true)
-    
+
     // Enable/disable context menu (right-click)
     .with_context_menu(true)
-    
+
     // Enable/disable zoom controls
     .with_zoom(true)
-    
+
     .build(hwnd)?;</code></pre>
   </section>
 
@@ -150,7 +150,7 @@ webview.post_web_message_as_string("Hello from Rust!")?;</code></pre>
     <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-javascript">// In your web page
 window.chrome.webview.addEventListener('message', event =&gt; &#123;
     console.log('Message from Rust:', event.data);
-    
+
     // Parse JSON messages
     if (typeof event.data === 'string') &#123;
         const data = JSON.parse(event.data);
@@ -216,21 +216,21 @@ fn main() -> Result&lt;()&gt; &#123;
         .title("Mini Browser")
         .size(1024, 768)
         .build()?;
-    
+
     // Create WebView
     let webview = WebViewBuilder::new()
         .with_url("https://www.rust-lang.org")
         .with_dev_tools(true)
         .build(window.hwnd())?;
-    
+
     // Handle window resize
     window.on_resize(|w, h| &#123;
         webview.resize_to_parent().ok();
     &#125;);
-    
+
     // Run message loop
     window.run();
-    
+
     Ok(())
 &#125;</code></pre>
   </section>

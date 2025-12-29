@@ -368,16 +368,17 @@ mod placeholder {
     use crate::error::{Error, Result};
     use windows::Win32::Foundation::HWND;
 
-    /// WebView2 is not available without the `webview2` feature.
-    pub struct WebViewBuilder;
+/// WebView2 is not available without the `webview2` feature.
+#[derive(Default)]
+pub struct WebViewBuilder;
 
-    impl WebViewBuilder {
-        /// Creates a new WebView builder.
-        ///
-        /// **Note**: Enable the `webview2` feature to use WebView2.
-        pub fn new() -> Self {
-            Self
-        }
+impl WebViewBuilder {
+    /// Creates a new WebView builder.
+    ///
+    /// **Note**: Enable the `webview2` feature to use WebView2.
+    pub fn new() -> Self {
+        Self
+    }
 
         /// Builds the WebView2 instance.
         ///

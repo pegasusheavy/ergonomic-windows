@@ -8,12 +8,12 @@
   <section class="mb-12">
     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Overview</h2>
     <p class="text-gray-600 mb-4">
-      The <code class="bg-gray-100 px-2 py-1 rounded">xaml</code> module provides types and utilities for working with 
+      The <code class="bg-gray-100 px-2 py-1 rounded">xaml</code> module provides types and utilities for working with
       WinRT XAML, the modern UI framework used in UWP and WinUI applications.
     </p>
     <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
       <p class="text-blue-800">
-        <strong>Note:</strong> Full WinRT XAML support requires a UWP/WinUI app context. For Win32 apps, 
+        <strong>Note:</strong> Full WinRT XAML support requires a UWP/WinUI app context. For Win32 apps,
         you can use <strong>XAML Islands</strong> (Windows 10 1903+) to host XAML controls.
       </p>
     </div>
@@ -60,7 +60,7 @@
   <!-- Layout Types -->
   <section class="mb-12">
     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Layout Types</h2>
-    
+
     <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Thickness</h3>
     <p class="text-gray-600 mb-2">Used for margins, padding, and borders:</p>
     <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::Thickness;
@@ -151,7 +151,7 @@ let transparent = XamlColor::TRANSPARENT;</code></pre>
   <!-- Typography -->
   <section class="mb-12">
     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Typography</h2>
-    
+
     <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Font Weight</h3>
     <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::FontWeight;
 
@@ -248,7 +248,7 @@ let host = XamlHost::new(hwnd)?;
 // (Full implementation requires UWP app context)</code></pre>
     <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mt-4">
       <p class="text-yellow-800">
-        <strong>Requirements:</strong> XAML Islands require Windows 10 1903+ and may require 
+        <strong>Requirements:</strong> XAML Islands require Windows 10 1903+ and may require
         application identity (packaged app or identity registration).
       </p>
     </div>

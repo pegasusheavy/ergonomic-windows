@@ -8,7 +8,7 @@
   <section class="mb-12">
     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Overview</h2>
     <p class="text-gray-600 mb-4">
-      The <code class="bg-gray-100 px-2 py-1 rounded">d2d</code> module provides safe wrappers for Direct2D and DirectWrite, 
+      The <code class="bg-gray-100 px-2 py-1 rounded">d2d</code> module provides safe wrappers for Direct2D and DirectWrite,
       enabling high-performance 2D graphics rendering with GPU acceleration.
     </p>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -84,7 +84,7 @@ let transparent = Color::TRANSPARENT;</code></pre>
   <!-- Drawing Shapes -->
   <section class="mb-12">
     <h2 class="text-2xl font-semibold text-gray-800 mb-4">Drawing Shapes</h2>
-    
+
     <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Lines</h3>
     <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">// Draw a line from (x1, y1) to (x2, y2)
 render_target.draw_line(
@@ -239,18 +239,18 @@ render_target.end_draw()?;</code></pre>
     &#125; else &#123;
         Color::from_hex(0x005A9E)  // Dark blue
     &#125;;
-    
+
     let bg_brush = rt.create_solid_brush(bg_color)?;
     let text_brush = rt.create_solid_brush(Color::WHITE)?;
-    
+
     // Draw rounded background
     rt.fill_rounded_rect(x, y, width, height, 4.0, 4.0, &bg_brush);
-    
+
     // Draw text centered
     text_format.set_text_alignment(TextAlignment::Center)?;
     text_format.set_paragraph_alignment(ParagraphAlignment::Center)?;
     rt.draw_text(text, text_format, x, y, width, height, &text_brush);
-    
+
     Ok(())
 &#125;</code></pre>
   </section>

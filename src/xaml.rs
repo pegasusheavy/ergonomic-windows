@@ -257,7 +257,7 @@ impl Default for GridLength {
 }
 
 /// Font weights for text.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 #[repr(u16)]
 pub enum FontWeight {
     /// Thin (100).
@@ -269,6 +269,7 @@ pub enum FontWeight {
     /// Semi-light (350).
     SemiLight = 350,
     /// Normal/Regular (400).
+    #[default]
     Normal = 400,
     /// Medium (500).
     Medium = 500,
@@ -282,12 +283,6 @@ pub enum FontWeight {
     Black = 900,
     /// Extra black (950).
     ExtraBlack = 950,
-}
-
-impl Default for FontWeight {
-    fn default() -> Self {
-        FontWeight::Normal
-    }
 }
 
 /// Font styles.
