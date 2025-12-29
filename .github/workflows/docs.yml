@@ -48,7 +48,7 @@ jobs:
 
       - name: Build docs
         working-directory: docs
-        run: pnpm run build -- --configuration=production --base-href=/ergonomic-windows/
+        run: pnpm exec ng build --configuration=production --base-href=/ergonomic-windows/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
