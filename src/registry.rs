@@ -611,7 +611,11 @@ mod tests {
 
         // Read it back
         let value = key.get_value("single_byte_binary");
-        assert!(value.is_ok(), "Failed to get single_byte_binary: {:?}", value);
+        assert!(
+            value.is_ok(),
+            "Failed to get single_byte_binary: {:?}",
+            value
+        );
         match value.unwrap() {
             Value::Binary(b) => assert_eq!(b, vec![0]),
             other => panic!("Expected Binary, got: {:?}", other),
