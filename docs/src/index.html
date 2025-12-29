@@ -5,12 +5,162 @@
   <title>ergonomic-windows - Ergonomic Windows API Wrappers for Rust</title>
   <base href="/ergonomic-windows/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Ergonomic, safe, and efficient wrappers around Windows APIs for Rust. String conversions, handle management, process control, registry access, and more.">
-  <meta name="keywords" content="rust, windows, win32, api, ffi, ergonomic, handle, string, utf16">
+  
+  <!-- Primary Meta Tags -->
+  <meta name="title" content="ergonomic-windows - Ergonomic Windows API Wrappers for Rust">
+  <meta name="description" content="Ergonomic, safe, and efficient wrappers around Windows APIs for Rust. String conversions with small string optimization, RAII handle management, process control, registry access, and more.">
+  <meta name="keywords" content="rust, windows, win32, api, ffi, ergonomic, handle, string, utf16, registry, process, safe, zero-cost, wrappers">
+  <meta name="author" content="Pegasus Heavy Industries">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="English">
+  <meta name="revisit-after" content="7 days">
+  <link rel="canonical" href="https://pegasusheavy.github.io/ergonomic-windows/">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://pegasusheavy.github.io/ergonomic-windows/">
+  <meta property="og:title" content="ergonomic-windows - Ergonomic Windows API Wrappers for Rust">
+  <meta property="og:description" content="Safe, ergonomic Rust wrappers for Windows APIs. RAII handles, UTF-16 strings with SSO, process management, registry access, and more.">
+  <meta property="og:image" content="https://pegasusheavy.github.io/ergonomic-windows/og-image.png">
+  <meta property="og:site_name" content="ergonomic-windows">
+  <meta property="og:locale" content="en_US">
+  
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://pegasusheavy.github.io/ergonomic-windows/">
+  <meta name="twitter:title" content="ergonomic-windows - Ergonomic Windows API Wrappers for Rust">
+  <meta name="twitter:description" content="Safe, ergonomic Rust wrappers for Windows APIs. RAII handles, UTF-16 strings with SSO, process management, registry access, and more.">
+  <meta name="twitter:image" content="https://pegasusheavy.github.io/ergonomic-windows/og-image.png">
+  
+  <!-- Favicon -->
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- JSON-LD Structured Data for SEO/AEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareSourceCode",
+    "name": "ergonomic-windows",
+    "description": "Ergonomic, safe Rust wrappers for Windows APIs - handles, processes, registry, file system, and UTF-16 strings with zero-cost abstractions",
+    "url": "https://pegasusheavy.github.io/ergonomic-windows/",
+    "codeRepository": "https://github.com/pegasusheavy/ergonomic-windows",
+    "programmingLanguage": {
+      "@type": "ComputerLanguage",
+      "name": "Rust"
+    },
+    "runtimePlatform": "Windows",
+    "license": "https://opensource.org/licenses/MIT",
+    "author": {
+      "@type": "Organization",
+      "name": "Pegasus Heavy Industries",
+      "url": "https://github.com/pegasusheavy"
+    },
+    "keywords": ["rust", "windows", "win32", "api", "ffi", "safe", "ergonomic"],
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    }
+  }
+  </script>
+  
+  <!-- FAQ Schema for AEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is ergonomic-windows?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "ergonomic-windows is a Rust crate that provides safe, ergonomic wrappers around Windows APIs. It includes modules for string conversion (UTF-8 to UTF-16), handle management with RAII, process creation and control, Windows Registry access, file system operations, and window creation."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I convert Rust strings to Windows UTF-16 strings?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use the to_wide() function or WideString type: let wide = to_wide(\"Hello\"); or let ws = WideString::new(\"Hello\"); then use ws.as_pcwstr() with Windows APIs. Small strings (≤22 chars) are stored inline without heap allocation."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is ergonomic-windows safe to use?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. The crate uses RAII (Resource Acquisition Is Initialization) patterns to automatically manage Windows handles, preventing use-after-close, double-close, and handle leak bugs. All unsafe code is documented, audited, and minimal in scope."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I spawn a Windows process in Rust?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use Command::new(\"program.exe\").arg(\"argument\").spawn() to create a process. You can chain methods like .current_dir(), .env(), .no_window(), and then call .run() to wait for completion or .spawn() to get a Process handle."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I read Windows Registry values in Rust?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Use Key::open(RootKey::CURRENT_USER, r\"Software\\Path\", Access::READ) to open a key, then key.get_value(\"name\") to read values. Supported types include String, DWORD, QWORD, Binary, and MultiString."
+        }
+      }
+    ]
+  }
+  </script>
+  
+  <!-- HowTo Schema for AEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to use ergonomic-windows in your Rust project",
+    "description": "Add Windows API support to your Rust project with ergonomic-windows",
+    "step": [
+      {
+        "@type": "HowToStep",
+        "name": "Add dependency",
+        "text": "Add ergonomic-windows to your Cargo.toml: [dependencies] ergonomic-windows = \"0.1\""
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Import the prelude",
+        "text": "Add use ergonomic_windows::prelude::*; to your Rust file to import common types."
+      },
+      {
+        "@type": "HowToStep",
+        "name": "Use Windows APIs",
+        "text": "Call functions like Command::new(), Key::open(), WideString::new(), etc. to interact with Windows."
+      }
+    ]
+  }
+  </script>
+  
+  <!-- WebSite Schema -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "ergonomic-windows Documentation",
+    "url": "https://pegasusheavy.github.io/ergonomic-windows/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://pegasusheavy.github.io/ergonomic-windows/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
 </head>
 <body class="font-sans antialiased">
   <app-root></app-root>

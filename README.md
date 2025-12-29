@@ -65,7 +65,7 @@ fn main() -> Result<()> {
         r"Software\Microsoft\Windows\CurrentVersion\Explorer",
         Access::READ,
     )?;
-    
+
     if let Ok(value) = key.get_value("ShellState") {
         println!("ShellState: {:?}", value);
     }
@@ -246,7 +246,7 @@ impl MessageHandler for MyHandler {
         println!("Window created!");
         Ok(())
     }
-    
+
     fn on_destroy(&mut self, _hwnd: windows::Win32::Foundation::HWND) -> Result<()> {
         std::process::exit(0);
     }
@@ -272,7 +272,7 @@ This crate uses `unsafe` code to interface with Windows APIs. All unsafe blocks 
 
 The public API is entirely safe Rust. Handles are managed via RAII, preventing:
 - Use-after-close bugs
-- Double-close bugs  
+- Double-close bugs
 - Handle leaks
 
 ## Performance

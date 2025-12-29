@@ -1,0 +1,40 @@
+# robots.txt for ergonomic-windows documentation
+# https://pegasusheavy.github.io/ergonomic-windows/
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://pegasusheavy.github.io/ergonomic-windows/sitemap.xml
+
+# Crawl-delay for politeness (optional)
+Crawl-delay: 1
+
+# Allow all major search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: Anthropic-AI
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
