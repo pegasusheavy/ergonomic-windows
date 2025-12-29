@@ -36,7 +36,7 @@ exclude = [
 ]
 
 [dependencies]
-windows = { version = "0.58", features = [
+windows = { version = "0.62", features = [
     # Foundation
     "Win32_Foundation",
 
