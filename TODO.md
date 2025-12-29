@@ -273,7 +273,7 @@ pool.put(wide);
 - [x] `Process` - Uses `OwnedHandle` for handle management
 - [x] `Key` (registry) - Properly closes key in `Drop`
 - [x] `Window` - Properly destroys window and unregisters class in `Drop`
-- [ ] ⚠️ Minor: 1,024 bytes retained at program end in profiling (investigate)
+- [x] ✅ 1,024 bytes retained at program end - **NOT A LEAK**: This is Rust's `stdout` buffer (`LineWriter::with_capacity`), lazily allocated on first `println!()` and intentionally never freed (global resource)
 
 ---
 
