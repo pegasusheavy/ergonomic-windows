@@ -11,6 +11,15 @@
 //! - **File System**: Windows-specific file operations
 //! - **Registry**: Read and write Windows Registry keys
 //! - **Windows**: Create windows and handle messages
+//! - **Threading**: Threads, mutexes, events, semaphores
+//! - **Memory**: Virtual memory, heaps, memory info
+//! - **Console**: Console I/O, colors, cursor control
+//! - **Environment**: Environment variables
+//! - **Pipes**: Anonymous and named pipes for IPC
+//! - **Time**: High-resolution timers, system time
+//! - **Modules**: Dynamic library (DLL) loading
+//! - **System Info**: OS version, hardware info
+//! - **Security**: Tokens, privileges, elevation
 //!
 //! ## Quick Start
 //!
@@ -101,16 +110,71 @@
 //!
 //! # Ok::<(), ergonomic_windows::error::Error>(())
 //! ```
+//!
+//! ### Threading and Synchronization
+//!
+//! ```no_run
+//! use ergonomic_windows::thread::{Thread, Mutex, Event};
+//! use std::sync::Arc;
+//!
+//! // Spawn a thread
+//! let thread = Thread::spawn(|| {
+//!     println!("Hello from thread!");
+//!     42
+//! })?;
+//! let exit_code = thread.join()?;
+//!
+//! // Use a mutex
+//! let mutex = Mutex::new(false)?;
+//! {
+//!     let _guard = mutex.lock()?;
+//!     // Protected region
+//! }
+//!
+//! // Use an event for signaling
+//! let event = Event::new_manual(false)?;
+//! event.set()?; // Signal
+//! event.wait()?; // Wait for signal
+//!
+//! # Ok::<(), ergonomic_windows::error::Error>(())
+//! ```
+//!
+//! ### System Information
+//!
+//! ```no_run
+//! use ergonomic_windows::sysinfo::{system_summary, OsVersion};
+//! use ergonomic_windows::security::is_elevated;
+//!
+//! let summary = system_summary()?;
+//! println!("OS: {}", summary.os_version);
+//! println!("CPUs: {}", summary.processor.processor_count);
+//! println!("Memory: {} MB", summary.memory.total_physical / 1024 / 1024);
+//! println!("Elevated: {}", is_elevated()?);
+//!
+//! # Ok::<(), ergonomic_windows::error::Error>(())
+//! ```
 
 #![cfg(windows)]
 #![warn(missing_docs)]
 
+// Core modules
 pub mod error;
-pub mod fs;
 pub mod handle;
+pub mod string;
+
+// System modules
+pub mod console;
+pub mod env;
+pub mod fs;
+pub mod mem;
+pub mod module;
+pub mod pipe;
 pub mod process;
 pub mod registry;
-pub mod string;
+pub mod security;
+pub mod sysinfo;
+pub mod thread;
+pub mod time;
 pub mod window;
 
 /// Prelude module for convenient imports.
@@ -124,4 +188,15 @@ pub mod prelude {
     pub use crate::window::{
         ExStyle, Message, MessageHandler, ShowCommand, Style, Window, WindowBuilder,
     };
+    
+    // New modules in prelude
+    pub use crate::console::{Console, Color, TextAttribute};
+    pub use crate::env::{get as env_get, set as env_set, expand as env_expand};
+    pub use crate::mem::{VirtualMemory, Protection, memory_status, MemoryStatus};
+    pub use crate::module::Library;
+    pub use crate::pipe::{AnonymousPipe, NamedPipeServer, NamedPipeClient};
+    pub use crate::security::{Token, is_elevated};
+    pub use crate::sysinfo::{system_summary, OsVersion, ProcessorInfo};
+    pub use crate::thread::{Thread, Mutex, Event, Semaphore, sleep, current_thread_id};
+    pub use crate::time::{PerformanceCounter, SystemTime, Stopwatch, tick_count};
 }

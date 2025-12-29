@@ -1,19 +1,19 @@
 import { Component } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { 
-  faGithub, 
-  faRust 
+import {
+  faGithub,
+  faRust
 } from '@fortawesome/free-brands-svg-icons';
-import { 
-  faBars, 
-  faBook, 
-  faCode, 
-  faCog, 
-  faFileAlt, 
-  faHome, 
-  faRocket, 
-  faShieldAlt, 
+import {
+  faBars,
+  faBook,
+  faCode,
+  faCog,
+  faFileAlt,
+  faHome,
+  faRocket,
+  faShieldAlt,
   faTachometerAlt,
   faTerminal,
   faDatabase,
