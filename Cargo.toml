@@ -93,7 +93,7 @@ windows = { version = "0.58", features = [
     "Win32_Networking_WinSock",
     "Win32_NetworkManagement_IpHelper",
 ] }
-thiserror = "1.0"
+thiserror = "2.0"
 dhat = { version = "0.3", optional = true }
 webview2-com = { version = "0.33", optional = true }
 
