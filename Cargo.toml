@@ -12,6 +12,29 @@ documentation = "https://docs.rs/ergonomic-windows"
 readme = "README.md"
 keywords = ["windows", "win32", "ffi", "direct2d", "ui"]
 categories = ["os::windows-apis", "api-bindings", "gui", "graphics"]
+exclude = [
+    # Documentation website
+    "docs/",
+    # GitHub configuration
+    ".github/",
+    # IDE/Editor configs
+    ".cursor/",
+    ".vscode/",
+    # Fuzz testing
+    "fuzz/",
+    # Profiling outputs
+    "*.svg",
+    "flamegraph.svg",
+    "perf.data*",
+    "dhat-heap.json",
+    # CI/CD artifacts
+    "target/",
+    # Development files
+    "TODO.md",
+    "CHANGELOG.md",
+    # Test fixtures (keep tests themselves)
+    "tests/fixtures/",
+]
 
 [dependencies]
 windows = { version = "0.58", features = [
