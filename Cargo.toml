@@ -3,15 +3,15 @@ name = "ergonomic-windows"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.82"
-description = "Ergonomic, safe Rust wrappers for Windows APIs - handles, processes, registry, file system, and UTF-16 strings with zero-cost abstractions"
+description = "Ergonomic, safe Rust wrappers for Windows APIs - handles, processes, registry, file system, UI controls, Direct2D graphics, and more"
 license = "MIT OR Apache-2.0"
 authors = ["Pegasus Heavy Industries LLC"]
 repository = "https://github.com/pegasusheavy/ergonomic-windows"
 homepage = "https://pegasusheavy.github.io/ergonomic-windows/"
 documentation = "https://docs.rs/ergonomic-windows"
 readme = "README.md"
-keywords = ["windows", "win32", "ffi", "utf16", "registry"]
-categories = ["os::windows-apis", "api-bindings", "development-tools::ffi"]
+keywords = ["windows", "win32", "ffi", "direct2d", "ui"]
+categories = ["os::windows-apis", "api-bindings", "gui", "graphics"]
 
 [dependencies]
 windows = { version = "0.58", features = [
@@ -43,14 +43,26 @@ windows = { version = "0.58", features = [
     "Win32_System_Performance",
     "Win32_System_Power",
     "Win32_System_SystemServices",
+    "Win32_System_Com",
 
     # UI
     "Win32_UI_WindowsAndMessaging",
     "Win32_UI_Input_KeyboardAndMouse",
     "Win32_UI_Shell",
+    "Win32_UI_Controls",
 
-    # Graphics
+    # Graphics - GDI
     "Win32_Graphics_Gdi",
+
+    # Graphics - Direct2D & DirectWrite
+    "Win32_Graphics_Direct2D",
+    "Win32_Graphics_Direct2D_Common",
+    "Win32_Graphics_DirectWrite",
+    "Win32_Graphics_Dxgi",
+    "Win32_Graphics_Dxgi_Common",
+    "Win32_Graphics_Imaging",
+    "Win32_Graphics_Imaging_D2D",
+    "Foundation_Numerics",
 
     # Globalization
     "Win32_Globalization",
@@ -61,6 +73,7 @@ windows = { version = "0.58", features = [
 ] }
 thiserror = "1.0"
 dhat = { version = "0.3", optional = true }
+webview2-com = { version = "0.33", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
@@ -69,6 +82,7 @@ tracking-allocator = "0.4"
 [features]
 default = []
 dhat-heap = ["dhat"]
+webview2 = ["webview2-com"]
 
 [lib]
 name = "ergonomic_windows"

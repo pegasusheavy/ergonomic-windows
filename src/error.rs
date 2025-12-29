@@ -96,6 +96,34 @@ impl Error {
         Error::Custom(msg.into())
     }
 
+    /// Creates an error from the last Windows error.
+    pub fn last_os_error() -> Self {
+        Error::Windows(WinError::from_win32())
+    }
+
+    /// Creates an error from a Win32 HRESULT.
+    pub fn from_win32(err: WinError) -> Self {
+        Error::Windows(err)
+    }
+
+    /// Creates an I/O error with context.
+    pub fn io_error(err: std::io::Error, context: &str) -> Self {
+        Error::Custom(format!("{}: {}", context, err))
+    }
+
+    /// Creates a generic "other" error.
+    pub fn other(msg: impl Into<String>) -> Self {
+        Error::Custom(msg.into())
+    }
+
+    /// Returns the raw error code.
+    pub fn raw_code(&self) -> i32 {
+        match self {
+            Error::Windows(e) => e.code().0,
+            _ => 0,
+        }
+    }
+
     /// Returns the Windows error code if this is a Windows error.
     pub fn win32_error_code(&self) -> Option<u32> {
         match self {
@@ -103,6 +131,11 @@ impl Error {
             _ => None,
         }
     }
+}
+
+/// Gets the last Windows error as our Error type.
+pub fn last_os_error() -> Error {
+    Error::last_os_error()
 }
 
 /// Extension trait for converting Windows `Result` types.

@@ -20,6 +20,10 @@
 //! - **Modules**: Dynamic library (DLL) loading
 //! - **System Info**: OS version, hardware info
 //! - **Security**: Tokens, privileges, elevation
+//! - **Controls**: Win32 common controls (buttons, edit, listbox, etc.)
+//! - **Direct2D**: Hardware-accelerated 2D graphics and text
+//! - **WebView2**: Chromium-based web browser control (requires feature)
+//! - **XAML**: WinRT XAML UI types and XAML Islands support
 //!
 //! ## Quick Start
 //!
@@ -177,6 +181,12 @@ pub mod thread;
 pub mod time;
 pub mod window;
 
+// UI modules
+pub mod controls;
+pub mod d2d;
+pub mod webview;
+pub mod xaml;
+
 /// Prelude module for convenient imports.
 pub mod prelude {
     pub use crate::error::{Error, Result, ResultExt};
@@ -189,7 +199,7 @@ pub mod prelude {
         ExStyle, Message, MessageHandler, ShowCommand, Style, Window, WindowBuilder,
     };
 
-    // New modules in prelude
+    // System modules
     pub use crate::console::{Color, Console, TextAttribute};
     pub use crate::env::{expand as env_expand, get as env_get, set as env_set};
     pub use crate::mem::{memory_status, MemoryStatus, Protection, VirtualMemory};
@@ -199,4 +209,20 @@ pub mod prelude {
     pub use crate::sysinfo::{system_summary, OsVersion, ProcessorInfo};
     pub use crate::thread::{current_thread_id, sleep, Event, Mutex, Semaphore, Thread};
     pub use crate::time::{tick_count, PerformanceCounter, Stopwatch, SystemTime};
+
+    // UI modules
+    pub use crate::controls::{
+        init_common_controls, Button, ButtonStyle, ComboBox, Control, Edit, EditStyle, Label,
+        ListBox, ProgressBar, ProgressStyle, TextAlign,
+    };
+    pub use crate::d2d::{
+        Color as D2DColor, D2DFactory, DWriteFactory, ParagraphAlignment, RenderTarget,
+        SolidBrush, TextAlignment, TextFormat,
+    };
+    pub use crate::webview::{WebView, WebViewBuilder};
+    pub use crate::xaml::{
+        CornerRadius, ElementTheme, FontStyle, FontWeight, GridLength, HorizontalAlignment,
+        Orientation, ScrollBarVisibility, TextTrimming, TextWrapping, Thickness, UiBuilder,
+        VerticalAlignment, Visibility, XamlColor, XamlHost,
+    };
 }
