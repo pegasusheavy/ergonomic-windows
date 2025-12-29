@@ -35,8 +35,8 @@ mod inner {
         CreateCoreWebView2EnvironmentWithOptions, ICoreWebView2, ICoreWebView2Controller,
     };
     use webview2_com::{
-        CreateCoreWebView2ControllerCompletedHandler, CreateCoreWebView2EnvironmentCompletedHandler,
-        ExecuteScriptCompletedHandler,
+        CreateCoreWebView2ControllerCompletedHandler,
+        CreateCoreWebView2EnvironmentCompletedHandler, ExecuteScriptCompletedHandler,
     };
     use windows::core::{PCWSTR, PWSTR};
     use windows::Win32::Foundation::{HWND, RECT};
@@ -131,12 +131,12 @@ mod inner {
                                 // Create controller
                                 let _ = env.CreateCoreWebView2Controller(
                                     parent,
-                                    &CreateCoreWebView2ControllerCompletedHandler::create(Box::new(
-                                        move |_err, controller| {
+                                    &CreateCoreWebView2ControllerCompletedHandler::create(
+                                        Box::new(move |_err, controller| {
                                             let _ = tx.send(controller);
                                             Ok(())
-                                        },
-                                    )),
+                                        }),
+                                    ),
                                 );
                             } else {
                                 let _ = tx.send(None);
@@ -373,17 +373,17 @@ mod placeholder {
     use crate::error::{Error, Result};
     use windows::Win32::Foundation::HWND;
 
-/// WebView2 is not available without the `webview2` feature.
-#[derive(Default)]
-pub struct WebViewBuilder;
+    /// WebView2 is not available without the `webview2` feature.
+    #[derive(Default)]
+    pub struct WebViewBuilder;
 
-impl WebViewBuilder {
-    /// Creates a new WebView builder.
-    ///
-    /// **Note**: Enable the `webview2` feature to use WebView2.
-    pub fn new() -> Self {
-        Self
-    }
+    impl WebViewBuilder {
+        /// Creates a new WebView builder.
+        ///
+        /// **Note**: Enable the `webview2` feature to use WebView2.
+        pub fn new() -> Self {
+            Self
+        }
 
         /// Builds the WebView2 instance.
         ///
@@ -401,4 +401,3 @@ impl WebViewBuilder {
 
 #[cfg(not(feature = "webview2"))]
 pub use placeholder::*;
-

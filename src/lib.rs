@@ -216,8 +216,8 @@ pub mod prelude {
         ListBox, ProgressBar, ProgressStyle, TextAlign,
     };
     pub use crate::d2d::{
-        Color as D2DColor, D2DFactory, DWriteFactory, ParagraphAlignment, RenderTarget,
-        SolidBrush, TextAlignment, TextFormat,
+        Color as D2DColor, D2DFactory, DWriteFactory, ParagraphAlignment, RenderTarget, SolidBrush,
+        TextAlignment, TextFormat,
     };
     pub use crate::webview::{WebView, WebViewBuilder};
     pub use crate::xaml::{

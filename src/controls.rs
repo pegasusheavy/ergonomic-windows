@@ -12,8 +12,8 @@ use windows::Win32::Foundation::{HINSTANCE, HWND, LPARAM, WPARAM};
 use windows::Win32::Graphics::Gdi::InvalidateRect;
 use windows::Win32::UI::Controls::{
     InitCommonControlsEx, ICC_STANDARD_CLASSES, ICC_WIN95_CLASSES, INITCOMMONCONTROLSEX,
-    PBS_MARQUEE, PBS_SMOOTH, PBM_DELTAPOS, PBM_GETPOS, PBM_SETMARQUEE, PBM_SETPOS, PBM_SETRANGE32,
-    PBM_SETSTEP, PBM_STEPIT, PROGRESS_CLASSW,
+    PBM_DELTAPOS, PBM_GETPOS, PBM_SETMARQUEE, PBM_SETPOS, PBM_SETRANGE32, PBM_SETSTEP, PBM_STEPIT,
+    PBS_MARQUEE, PBS_SMOOTH, PROGRESS_CLASSW,
 };
 use windows::Win32::UI::WindowsAndMessaging::{
     CreateWindowExW, DestroyWindow, GetWindowLongPtrW, SendMessageW, SetWindowLongPtrW,
@@ -134,8 +134,10 @@ impl Control {
     pub fn enable(&self) {
         // SAFETY: Window style manipulation is safe
         unsafe {
-            let style =
-                GetWindowLongPtrW(self.hwnd, windows::Win32::UI::WindowsAndMessaging::GWL_STYLE);
+            let style = GetWindowLongPtrW(
+                self.hwnd,
+                windows::Win32::UI::WindowsAndMessaging::GWL_STYLE,
+            );
             SetWindowLongPtrW(
                 self.hwnd,
                 windows::Win32::UI::WindowsAndMessaging::GWL_STYLE,
@@ -149,8 +151,10 @@ impl Control {
     pub fn disable(&self) {
         // SAFETY: Window style manipulation is safe
         unsafe {
-            let style =
-                GetWindowLongPtrW(self.hwnd, windows::Win32::UI::WindowsAndMessaging::GWL_STYLE);
+            let style = GetWindowLongPtrW(
+                self.hwnd,
+                windows::Win32::UI::WindowsAndMessaging::GWL_STYLE,
+            );
             SetWindowLongPtrW(
                 self.hwnd,
                 windows::Win32::UI::WindowsAndMessaging::GWL_STYLE,
@@ -614,7 +618,12 @@ impl ProgressBar {
     pub fn set_step(control: &Control, step: i32) {
         // SAFETY: PBM_SETSTEP is safe
         unsafe {
-            SendMessageW(control.hwnd(), PBM_SETSTEP, WPARAM(step as usize), LPARAM(0));
+            SendMessageW(
+                control.hwnd(),
+                PBM_SETSTEP,
+                WPARAM(step as usize),
+                LPARAM(0),
+            );
         }
     }
 
@@ -877,7 +886,10 @@ mod tests {
         let result = init_common_controls();
         // We accept both success and failure (failure expected in headless CI)
         if result.is_err() {
-            eprintln!("init_common_controls failed (expected in headless CI): {:?}", result);
+            eprintln!(
+                "init_common_controls failed (expected in headless CI): {:?}",
+                result
+            );
         }
     }
 
