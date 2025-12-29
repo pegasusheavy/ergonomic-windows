@@ -535,12 +535,32 @@ pub fn set_dword(root: RootKey, path: &str, name: &str, value: u32) -> Result<()
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::atomic::{AtomicU32, Ordering};
+
+    // Counter to generate unique key paths per test
+    static TEST_COUNTER: AtomicU32 = AtomicU32::new(0);
 
     // Test registry path under HKCU for tests (doesn't require admin)
-    const TEST_KEY_PATH: &str = "Software\\ErgonomicWindowsTest";
+    const TEST_KEY_BASE: &str = "Software\\ErgonomicWindowsTest";
 
+    fn get_unique_test_key() -> String {
+        let id = TEST_COUNTER.fetch_add(1, Ordering::SeqCst);
+        let thread_id = std::thread::current().id();
+        format!("{}_{:?}_{}", TEST_KEY_BASE, thread_id, id)
+    }
+
+    fn cleanup_test_key_path(path: &str) {
+        // Extract the subkey name from the full path
+        if let Some(subkey) = path.strip_prefix("Software\\") {
+            if let Ok(key) = Key::open(RootKey::CURRENT_USER, "Software", Access::WRITE) {
+                let _ = key.delete_subkey(subkey);
+            }
+        }
+    }
+
+    #[allow(dead_code)]
     fn cleanup_test_key() {
-        // Try to delete the test key and ignore errors
+        // Try to delete the test key and ignore errors (legacy, for backward compat)
         if let Ok(key) = Key::open(RootKey::CURRENT_USER, "Software", Access::WRITE) {
             let _ = key.delete_subkey("ErgonomicWindowsTest");
         }
@@ -552,9 +572,10 @@ mod tests {
 
     #[test]
     fn test_empty_string_value() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
+        cleanup_test_key_path(&test_key);
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             // Set empty string
             let result = key.set_value("empty_string", &Value::String(String::new()));
             assert!(result.is_ok());
@@ -568,14 +589,15 @@ mod tests {
             }
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
     fn test_empty_expand_string_value() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
+        cleanup_test_key_path(&test_key);
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             // Set empty expand string
             let result = key.set_value("empty_expand", &Value::ExpandString(String::new()));
             assert!(result.is_ok());
@@ -589,15 +611,16 @@ mod tests {
             }
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
     fn test_empty_binary_value() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
+        cleanup_test_key_path(&test_key);
 
         // Use expect to get better error messages
-        let key = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL)
+        let key = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL)
             .expect("Failed to create test registry key");
 
         // Note: Windows registry may not allow truly empty binary values (0 bytes)
@@ -625,14 +648,16 @@ mod tests {
         // Just verify it doesn't panic, whether it succeeds or fails
         let _ = key.set_value("empty_binary", &Value::Binary(vec![]));
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
     fn test_empty_multi_string_value() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        cleanup_test_key_path(&test_key);
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             // Set empty multi-string
             let result = key.set_value("empty_multi", &Value::MultiString(vec![]));
             assert!(result.is_ok());
@@ -646,7 +671,7 @@ mod tests {
             }
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     // ============================================================================
@@ -655,30 +680,38 @@ mod tests {
 
     #[test]
     fn test_dword_value() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
+        cleanup_test_key_path(&test_key);
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             // Test various DWORD values
             let test_values = [0u32, 1, 42, u32::MAX];
 
             for &val in &test_values {
                 let result = key.set_value("dword_test", &Value::Dword(val));
-                assert!(result.is_ok());
+                assert!(
+                    result.is_ok(),
+                    "Failed to set DWORD value {}: {:?}",
+                    val,
+                    result
+                );
 
                 let read = key.get_value("dword_test");
-                assert!(read.is_ok());
+                assert!(read.is_ok(), "Failed to read DWORD value: {:?}", read);
                 assert_eq!(read.unwrap().as_dword(), Some(val));
             }
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
     fn test_qword_value() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        cleanup_test_key_path(&test_key);
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             let test_values = [0u64, 1, 42, u64::MAX];
 
             for &val in &test_values {
@@ -691,14 +724,16 @@ mod tests {
             }
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
     fn test_string_with_special_characters() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        cleanup_test_key_path(&test_key);
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             let test_strings = [
                 "Simple ASCII",
                 "With\ttab",
@@ -719,14 +754,16 @@ mod tests {
             }
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
     fn test_multi_string_value() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        cleanup_test_key_path(&test_key);
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             let strings = vec![
                 "First".to_string(),
                 "Second".to_string(),
@@ -744,14 +781,16 @@ mod tests {
             }
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
     fn test_binary_value() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        cleanup_test_key_path(&test_key);
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             let data: Vec<u8> = (0..=255).collect();
 
             let result = key.set_value("binary_test", &Value::Binary(data.clone()));
@@ -765,7 +804,7 @@ mod tests {
             }
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     // ============================================================================
@@ -774,9 +813,11 @@ mod tests {
 
     #[test]
     fn test_create_and_delete_subkey() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        cleanup_test_key_path(&test_key);
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             // Create subkey
             let result = key.create_subkey("SubKey", Access::ALL);
             assert!(result.is_ok());
@@ -786,14 +827,16 @@ mod tests {
             assert!(result.is_ok());
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
     fn test_enumerate_subkeys() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        cleanup_test_key_path(&test_key);
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             // Create some subkeys
             let _ = key.create_subkey("SubA", Access::ALL);
             let _ = key.create_subkey("SubB", Access::ALL);
@@ -808,14 +851,16 @@ mod tests {
             assert!(subkeys.contains(&"SubC".to_string()));
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
     fn test_enumerate_values() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        cleanup_test_key_path(&test_key);
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             // Create some values
             let _ = key.set_value("ValA", &Value::Dword(1));
             let _ = key.set_value("ValB", &Value::String("test".to_string()));
@@ -830,14 +875,16 @@ mod tests {
             assert!(values.contains(&"ValC".to_string()));
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
     fn test_delete_value() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        cleanup_test_key_path(&test_key);
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             // Create a value
             let _ = key.set_value("ToDelete", &Value::Dword(42));
 
@@ -852,42 +899,45 @@ mod tests {
             assert!(key.get_value("ToDelete").is_err());
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
     fn test_nonexistent_value() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
 
-        if let Ok(key) = Key::create(RootKey::CURRENT_USER, TEST_KEY_PATH, Access::ALL) {
+        cleanup_test_key_path(&test_key);
+
+        if let Ok(key) = Key::create(RootKey::CURRENT_USER, &test_key, Access::ALL) {
             let result = key.get_value("NonExistent");
             assert!(result.is_err());
         }
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
     fn test_convenience_functions() {
-        cleanup_test_key();
+        let test_key = get_unique_test_key();
+        cleanup_test_key_path(&test_key);
 
         // Test set_string and get_string
-        let result = set_string(RootKey::CURRENT_USER, TEST_KEY_PATH, "conv_string", "hello");
+        let result = set_string(RootKey::CURRENT_USER, &test_key, "conv_string", "hello");
         assert!(result.is_ok());
 
-        let value = get_string(RootKey::CURRENT_USER, TEST_KEY_PATH, "conv_string");
+        let value = get_string(RootKey::CURRENT_USER, &test_key, "conv_string");
         assert!(value.is_ok());
         assert_eq!(value.unwrap(), "hello");
 
         // Test set_dword and get_dword
-        let result = set_dword(RootKey::CURRENT_USER, TEST_KEY_PATH, "conv_dword", 12345);
+        let result = set_dword(RootKey::CURRENT_USER, &test_key, "conv_dword", 12345);
         assert!(result.is_ok());
 
-        let value = get_dword(RootKey::CURRENT_USER, TEST_KEY_PATH, "conv_dword");
+        let value = get_dword(RootKey::CURRENT_USER, &test_key, "conv_dword");
         assert!(value.is_ok());
         assert_eq!(value.unwrap(), 12345);
 
-        cleanup_test_key();
+        cleanup_test_key_path(&test_key);
     }
 
     #[test]
