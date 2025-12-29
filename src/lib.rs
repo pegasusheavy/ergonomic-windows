@@ -190,13 +190,13 @@ pub mod prelude {
     };
 
     // New modules in prelude
-    pub use crate::console::{Console, Color, TextAttribute};
-    pub use crate::env::{get as env_get, set as env_set, expand as env_expand};
-    pub use crate::mem::{VirtualMemory, Protection, memory_status, MemoryStatus};
+    pub use crate::console::{Color, Console, TextAttribute};
+    pub use crate::env::{expand as env_expand, get as env_get, set as env_set};
+    pub use crate::mem::{memory_status, MemoryStatus, Protection, VirtualMemory};
     pub use crate::module::Library;
-    pub use crate::pipe::{AnonymousPipe, NamedPipeServer, NamedPipeClient};
-    pub use crate::security::{Token, is_elevated};
+    pub use crate::pipe::{AnonymousPipe, NamedPipeClient, NamedPipeServer};
+    pub use crate::security::{is_elevated, Token};
     pub use crate::sysinfo::{system_summary, OsVersion, ProcessorInfo};
-    pub use crate::thread::{Thread, Mutex, Event, Semaphore, sleep, current_thread_id};
-    pub use crate::time::{PerformanceCounter, SystemTime, Stopwatch, tick_count};
+    pub use crate::thread::{current_thread_id, sleep, Event, Mutex, Semaphore, Thread};
+    pub use crate::time::{tick_count, PerformanceCounter, Stopwatch, SystemTime};
 }

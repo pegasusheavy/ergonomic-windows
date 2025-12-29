@@ -89,9 +89,7 @@ impl Thread {
 
     /// Waits for the thread to finish with an optional timeout.
     pub fn wait(&self, timeout: Option<Duration>) -> Result<WaitResult> {
-        let timeout_ms = timeout
-            .map(|d| d.as_millis() as u32)
-            .unwrap_or(INFINITE);
+        let timeout_ms = timeout.map(|d| d.as_millis() as u32).unwrap_or(INFINITE);
 
         // SAFETY: handle is valid
         let result = unsafe { WaitForSingleObject(self.handle.as_raw(), timeout_ms) };
@@ -219,9 +217,7 @@ impl Mutex {
 
     /// Tries to acquire the mutex with a timeout.
     pub fn lock_timeout(&self, timeout: Option<Duration>) -> Result<MutexGuard<'_>> {
-        let timeout_ms = timeout
-            .map(|d| d.as_millis() as u32)
-            .unwrap_or(INFINITE);
+        let timeout_ms = timeout.map(|d| d.as_millis() as u32).unwrap_or(INFINITE);
 
         // SAFETY: handle is valid
         let result = unsafe { WaitForSingleObject(self.handle.as_raw(), timeout_ms) };
@@ -312,8 +308,13 @@ impl Event {
     pub fn open(name: &str) -> Result<Self> {
         let name_wide = WideString::new(name);
         // SAFETY: OpenEventW is safe with valid string
-        let handle =
-            unsafe { OpenEventW(EVENT_ALL_ACCESS | EVENT_MODIFY_STATE, false, name_wide.as_pcwstr())? };
+        let handle = unsafe {
+            OpenEventW(
+                EVENT_ALL_ACCESS | EVENT_MODIFY_STATE,
+                false,
+                name_wide.as_pcwstr(),
+            )?
+        };
         Ok(Self {
             handle: OwnedHandle::new(handle)?,
         })
@@ -344,9 +345,7 @@ impl Event {
 
     /// Waits for the event with a timeout.
     pub fn wait_timeout(&self, timeout: Option<Duration>) -> Result<WaitResult> {
-        let timeout_ms = timeout
-            .map(|d| d.as_millis() as u32)
-            .unwrap_or(INFINITE);
+        let timeout_ms = timeout.map(|d| d.as_millis() as u32).unwrap_or(INFINITE);
 
         // SAFETY: handle is valid
         let result = unsafe { WaitForSingleObject(self.handle.as_raw(), timeout_ms) };
@@ -404,9 +403,7 @@ impl Semaphore {
 
     /// Tries to acquire the semaphore with a timeout.
     pub fn acquire_timeout(&self, timeout: Option<Duration>) -> Result<WaitResult> {
-        let timeout_ms = timeout
-            .map(|d| d.as_millis() as u32)
-            .unwrap_or(INFINITE);
+        let timeout_ms = timeout.map(|d| d.as_millis() as u32).unwrap_or(INFINITE);
 
         // SAFETY: handle is valid
         let result = unsafe { WaitForSingleObject(self.handle.as_raw(), timeout_ms) };
@@ -540,7 +537,9 @@ mod tests {
         sem.acquire().unwrap();
 
         // Third acquire should timeout
-        let result = sem.acquire_timeout(Some(Duration::from_millis(10))).unwrap();
+        let result = sem
+            .acquire_timeout(Some(Duration::from_millis(10)))
+            .unwrap();
         assert_eq!(result, WaitResult::Timeout);
 
         // Release one
@@ -559,4 +558,3 @@ mod tests {
         assert!(elapsed >= Duration::from_millis(40)); // Allow some tolerance
     }
 }
-

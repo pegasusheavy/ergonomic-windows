@@ -9,8 +9,8 @@ use crate::string::WideString;
 use windows::Win32::Foundation::{HANDLE, LUID};
 use windows::Win32::Security::{
     AdjustTokenPrivileges, GetTokenInformation, LookupPrivilegeNameW, LookupPrivilegeValueW,
-    TokenElevation, TokenPrivileges, LUID_AND_ATTRIBUTES, SE_PRIVILEGE_ENABLED,
-    TOKEN_ACCESS_MASK, TOKEN_ADJUST_PRIVILEGES, TOKEN_ELEVATION, TOKEN_PRIVILEGES, TOKEN_QUERY,
+    TokenElevation, TokenPrivileges, LUID_AND_ATTRIBUTES, SE_PRIVILEGE_ENABLED, TOKEN_ACCESS_MASK,
+    TOKEN_ADJUST_PRIVILEGES, TOKEN_ELEVATION, TOKEN_PRIVILEGES, TOKEN_QUERY,
 };
 use windows::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
 
@@ -125,11 +125,15 @@ impl Token {
             LookupPrivilegeValueW(None, name_wide.as_pcwstr(), &mut luid)?;
         }
 
-        let mut tp = TOKEN_PRIVILEGES {
+        let tp = TOKEN_PRIVILEGES {
             PrivilegeCount: 1,
             Privileges: [LUID_AND_ATTRIBUTES {
                 Luid: luid,
-                Attributes: if enable { SE_PRIVILEGE_ENABLED } else { Default::default() },
+                Attributes: if enable {
+                    SE_PRIVILEGE_ENABLED
+                } else {
+                    Default::default()
+                },
             }],
         };
 
@@ -169,13 +173,7 @@ impl Token {
         // Get token privileges
         let mut size = 0u32;
         let _ = unsafe {
-            GetTokenInformation(
-                self.handle.as_raw(),
-                TokenPrivileges,
-                None,
-                0,
-                &mut size,
-            )
+            GetTokenInformation(self.handle.as_raw(), TokenPrivileges, None, 0, &mut size)
         };
 
         if size == 0 {
@@ -228,9 +226,7 @@ pub fn privilege_name(luid: LUID) -> Result<String> {
     let mut size = 0u32;
 
     // Get required size
-    let _ = unsafe {
-        LookupPrivilegeNameW(None, &luid, windows::core::PWSTR::null(), &mut size)
-    };
+    let _ = unsafe { LookupPrivilegeNameW(None, &luid, windows::core::PWSTR::null(), &mut size) };
 
     if size == 0 {
         return Err(crate::error::last_error());
@@ -305,4 +301,3 @@ mod tests {
         println!("Has SeChangeNotifyPrivilege: {:?}", has_change_notify);
     }
 }
-

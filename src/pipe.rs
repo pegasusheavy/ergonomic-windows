@@ -267,10 +267,10 @@ impl NamedPipeClient {
 
     /// Sets the pipe to message mode.
     pub fn set_message_mode(&self) -> Result<()> {
-        let mut mode = PIPE_READMODE_MESSAGE;
+        let mode = PIPE_READMODE_MESSAGE;
         // SAFETY: SetNamedPipeHandleState is safe with valid parameters
         unsafe {
-            SetNamedPipeHandleState(self.handle.as_raw(), Some(&mut mode), None, None)?;
+            SetNamedPipeHandleState(self.handle.as_raw(), Some(&mode), None, None)?;
         }
         Ok(())
     }
@@ -323,7 +323,6 @@ pub fn unique_pipe_name(prefix: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::thread;
 
     #[test]
     fn test_anonymous_pipe() {
@@ -333,12 +332,7 @@ mod tests {
         let data = b"Hello, pipe!";
         let mut written = 0u32;
         unsafe {
-            WriteFile(
-                pipe.write.as_raw(),
-                Some(data),
-                Some(&mut written),
-                None,
-            ).unwrap();
+            WriteFile(pipe.write.as_raw(), Some(data), Some(&mut written), None).unwrap();
         }
         assert_eq!(written as usize, data.len());
 
@@ -346,12 +340,7 @@ mod tests {
         let mut buffer = [0u8; 32];
         let mut read = 0u32;
         unsafe {
-            ReadFile(
-                pipe.read.as_raw(),
-                Some(&mut buffer),
-                Some(&mut read),
-                None,
-            ).unwrap();
+            ReadFile(pipe.read.as_raw(), Some(&mut buffer), Some(&mut read), None).unwrap();
         }
         assert_eq!(&buffer[..read as usize], data);
     }
@@ -359,11 +348,10 @@ mod tests {
     #[test]
     fn test_unique_pipe_name() {
         let name1 = unique_pipe_name("test");
-        let name2 = unique_pipe_name("test");
+        let _name2 = unique_pipe_name("test");
 
         assert!(name1.starts_with(r"\\.\pipe\test_"));
         // Names should be different (different timestamps)
         // But they might be the same if called too fast, so we just check format
     }
 }
-

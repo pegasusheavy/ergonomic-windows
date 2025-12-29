@@ -2,7 +2,7 @@
 //!
 //! Provides safe wrappers for Windows environment variable operations.
 
-use crate::error::{Error, Result};
+use crate::error::Result;
 use crate::string::{from_wide, to_wide, WideString};
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -79,10 +79,7 @@ pub fn expand(s: &str) -> Result<String> {
 
     // SAFETY: ExpandEnvironmentStringsW is safe with valid buffer
     let len = unsafe {
-        ExpandEnvironmentStringsW(
-            windows::core::PCWSTR(wide.as_ptr()),
-            Some(&mut buffer)
-        )
+        ExpandEnvironmentStringsW(windows::core::PCWSTR(wide.as_ptr()), Some(&mut buffer))
     } as usize;
 
     if len == 0 {
@@ -226,4 +223,3 @@ mod tests {
         assert!(!exists("NONEXISTENT_VAR_12345"));
     }
 }
-

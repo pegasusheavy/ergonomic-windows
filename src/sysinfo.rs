@@ -7,19 +7,24 @@ use crate::error::Result;
 use crate::string::from_wide;
 use std::path::PathBuf;
 use windows::Win32::System::SystemInformation::{
-    GetComputerNameExW, GetNativeSystemInfo, GetVersionExW, ComputerNameDnsDomain,
-    ComputerNameDnsFullyQualified, ComputerNameDnsHostname, ComputerNameNetBIOS,
-    ComputerNamePhysicalDnsDomain, ComputerNamePhysicalDnsFullyQualified,
-    ComputerNamePhysicalDnsHostname, ComputerNamePhysicalNetBIOS, OSVERSIONINFOEXW, SYSTEM_INFO,
+    ComputerNameDnsDomain, ComputerNameDnsFullyQualified, ComputerNameDnsHostname,
+    ComputerNameNetBIOS, ComputerNamePhysicalDnsDomain, ComputerNamePhysicalDnsFullyQualified,
+    ComputerNamePhysicalDnsHostname, ComputerNamePhysicalNetBIOS, GetComputerNameExW,
+    GetNativeSystemInfo, GetVersionExW, OSVERSIONINFOEXW, SYSTEM_INFO,
 };
 
 /// Processor architecture.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProcessorArchitecture {
+    /// Intel x86 (32-bit).
     X86,
+    /// AMD64 / Intel 64 (64-bit).
     X64,
+    /// ARM (32-bit).
     Arm,
+    /// ARM64 (64-bit).
     Arm64,
+    /// Unknown architecture with raw ID.
     Unknown(u16),
 }
 
@@ -74,7 +79,7 @@ pub fn processor_info() -> ProcessorInfo {
         architecture: ProcessorArchitecture::from_id(arch.0),
         processor_count: info.dwNumberOfProcessors,
         processor_type: info.dwProcessorType,
-        processor_level: 0, // Not directly available in the union
+        processor_level: 0,    // Not directly available in the union
         processor_revision: 0, // Not directly available in the union
         page_size: info.dwPageSize,
         min_address: info.lpMinimumApplicationAddress as usize,
@@ -151,10 +156,16 @@ impl OsVersion {
                 2 => format!("Windows 8 (Build {})", self.build),
                 1 => format!("Windows 7 (Build {})", self.build),
                 0 => format!("Windows Vista (Build {})", self.build),
-                _ => format!("Windows {}.{} (Build {})", self.major, self.minor, self.build),
+                _ => format!(
+                    "Windows {}.{} (Build {})",
+                    self.major, self.minor, self.build
+                ),
             }
         } else {
-            format!("Windows {}.{} (Build {})", self.major, self.minor, self.build)
+            format!(
+                "Windows {}.{} (Build {})",
+                self.major, self.minor, self.build
+            )
         }
     }
 }
@@ -207,7 +218,13 @@ pub fn computer_name(name_type: ComputerNameType) -> Result<String> {
 
     // First call to get size
     // SAFETY: GetComputerNameExW is safe
-    let _ = unsafe { GetComputerNameExW(name_type.to_native(), windows::core::PWSTR::null(), &mut size) };
+    let _ = unsafe {
+        GetComputerNameExW(
+            name_type.to_native(),
+            windows::core::PWSTR::null(),
+            &mut size,
+        )
+    };
 
     if size == 0 {
         return Ok(String::new());
@@ -320,7 +337,9 @@ mod tests {
         println!("OS: {}", summary.os_version);
         println!("Hostname: {}", summary.hostname);
         println!("Processors: {}", summary.processor.processor_count);
-        println!("Memory: {} MB total", summary.memory.total_physical / 1024 / 1024);
+        println!(
+            "Memory: {} MB total",
+            summary.memory.total_physical / 1024 / 1024
+        );
     }
 }
-

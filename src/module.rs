@@ -7,8 +7,8 @@ use crate::string::WideString;
 use std::path::Path;
 use windows::Win32::Foundation::{FreeLibrary, HMODULE};
 use windows::Win32::System::LibraryLoader::{
-    GetModuleFileNameW, GetModuleHandleW, GetProcAddress, LoadLibraryExW,
-    LoadLibraryW, LOAD_LIBRARY_FLAGS, LOAD_LIBRARY_AS_DATAFILE, LOAD_LIBRARY_AS_IMAGE_RESOURCE,
+    GetModuleFileNameW, GetModuleHandleW, GetProcAddress, LoadLibraryExW, LoadLibraryW,
+    LOAD_LIBRARY_AS_DATAFILE, LOAD_LIBRARY_AS_IMAGE_RESOURCE, LOAD_LIBRARY_FLAGS,
     LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR, LOAD_LIBRARY_SEARCH_SYSTEM32,
 };
 
@@ -37,9 +37,7 @@ impl Library {
         let path_wide = WideString::from_path(path.as_ref());
 
         // SAFETY: LoadLibraryExW is safe with valid parameters
-        let handle = unsafe {
-            LoadLibraryExW(path_wide.as_pcwstr(), None, flags.to_native())?
-        };
+        let handle = unsafe { LoadLibraryExW(path_wide.as_pcwstr(), None, flags.to_native())? };
 
         Ok(Self {
             handle,
@@ -80,10 +78,13 @@ impl Library {
     where
         F: Copy,
     {
-        let name_cstr = std::ffi::CString::new(name)
-            .map_err(|_| Error::custom("Invalid function name"))?;
+        let name_cstr =
+            std::ffi::CString::new(name).map_err(|_| Error::custom("Invalid function name"))?;
 
-        let proc = GetProcAddress(self.handle, windows::core::PCSTR(name_cstr.as_ptr() as *const u8));
+        let proc = GetProcAddress(
+            self.handle,
+            windows::core::PCSTR(name_cstr.as_ptr() as *const u8),
+        );
 
         match proc {
             Some(p) => Ok(std::mem::transmute_copy(&p)),
@@ -96,9 +97,7 @@ impl Library {
         let mut buffer = vec![0u16; 32768]; // MAX_PATH is not enough for extended paths
 
         // SAFETY: GetModuleFileNameW is safe with valid parameters
-        let len = unsafe {
-            GetModuleFileNameW(self.handle, &mut buffer)
-        } as usize;
+        let len = unsafe { GetModuleFileNameW(self.handle, &mut buffer) } as usize;
 
         if len == 0 {
             return Err(crate::error::last_error());
@@ -198,9 +197,8 @@ mod tests {
 
         // GetCurrentProcessId is always available
         type GetCurrentProcessIdFn = unsafe extern "system" fn() -> u32;
-        let get_pid: GetCurrentProcessIdFn = unsafe {
-            kernel32.get_proc("GetCurrentProcessId").unwrap()
-        };
+        let get_pid: GetCurrentProcessIdFn =
+            unsafe { kernel32.get_proc("GetCurrentProcessId").unwrap() };
 
         let pid = unsafe { get_pid() };
         assert!(pid > 0);
@@ -219,4 +217,3 @@ mod tests {
         assert!(dir.is_dir());
     }
 }
-

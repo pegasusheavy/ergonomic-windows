@@ -78,13 +78,21 @@ pub fn tick_count() -> u64 {
 /// System time with date and time components.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct SystemTime {
+    /// Year (1601-30827).
     pub year: u16,
+    /// Month (1-12).
     pub month: u16,
+    /// Day of week (0 = Sunday, 6 = Saturday).
     pub day_of_week: u16,
+    /// Day of month (1-31).
     pub day: u16,
+    /// Hour (0-23).
     pub hour: u16,
+    /// Minute (0-59).
     pub minute: u16,
+    /// Second (0-59).
     pub second: u16,
+    /// Milliseconds (0-999).
     pub milliseconds: u16,
 }
 
@@ -116,7 +124,7 @@ impl SystemTime {
         }
     }
 
-    fn to_windows(&self) -> SYSTEMTIME {
+    fn into_windows(self) -> SYSTEMTIME {
         SYSTEMTIME {
             wYear: self.year,
             wMonth: self.month,
@@ -131,7 +139,7 @@ impl SystemTime {
 
     /// Converts to a file time (100-nanosecond intervals since Jan 1, 1601).
     pub fn to_file_time(&self) -> Result<u64> {
-        let st = self.to_windows();
+        let st = (*self).into_windows();
         let mut ft = FILETIME::default();
         // SAFETY: SystemTimeToFileTime is safe with valid parameters
         unsafe {
@@ -241,10 +249,10 @@ impl TimeZone {
         };
 
         let standard_name = String::from_utf16_lossy(
-            &tzi.StandardName[..tzi.StandardName.iter().position(|&c| c == 0).unwrap_or(32)]
+            &tzi.StandardName[..tzi.StandardName.iter().position(|&c| c == 0).unwrap_or(32)],
         );
         let daylight_name = String::from_utf16_lossy(
-            &tzi.DaylightName[..tzi.DaylightName.iter().position(|&c| c == 0).unwrap_or(32)]
+            &tzi.DaylightName[..tzi.DaylightName.iter().position(|&c| c == 0).unwrap_or(32)],
         );
 
         Ok(Self {
@@ -413,4 +421,3 @@ mod tests {
         assert_eq!(elapsed, elapsed2);
     }
 }
-

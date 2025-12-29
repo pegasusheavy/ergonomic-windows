@@ -40,21 +40,37 @@ impl StdHandle {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u16)]
 pub enum Color {
+    /// Black (0x0).
     Black = 0,
+    /// Dark blue (0x1).
     DarkBlue = 1,
+    /// Dark green (0x2).
     DarkGreen = 2,
+    /// Dark cyan (0x3).
     DarkCyan = 3,
+    /// Dark red (0x4).
     DarkRed = 4,
+    /// Dark magenta (0x5).
     DarkMagenta = 5,
+    /// Dark yellow (0x6).
     DarkYellow = 6,
+    /// Gray (0x7).
     Gray = 7,
+    /// Dark gray (0x8).
     DarkGray = 8,
+    /// Blue (0x9).
     Blue = 9,
+    /// Green (0xA).
     Green = 10,
+    /// Cyan (0xB).
     Cyan = 11,
+    /// Red (0xC).
     Red = 12,
+    /// Magenta (0xD).
     Magenta = 13,
+    /// Yellow (0xE).
     Yellow = 14,
+    /// White (0xF).
     White = 15,
 }
 
@@ -203,7 +219,7 @@ impl Console {
                 buffer.as_mut_ptr() as *mut _,
                 buffer.len() as u32,
                 &mut read,
-                None
+                None,
             )?;
         }
 
@@ -339,7 +355,8 @@ impl Console {
             GetConsoleMode(self.output, &mut mode)?;
         }
 
-        let new_mode = CONSOLE_MODE(mode.0 | ENABLE_VIRTUAL_TERMINAL_PROCESSING.0 | ENABLE_PROCESSED_OUTPUT.0);
+        let new_mode =
+            CONSOLE_MODE(mode.0 | ENABLE_VIRTUAL_TERMINAL_PROCESSING.0 | ENABLE_PROCESSED_OUTPUT.0);
         // SAFETY: SetConsoleMode is safe with valid handle
         unsafe {
             SetConsoleMode(self.output, new_mode)?;
@@ -358,7 +375,7 @@ impl Console {
 
         // Disable line input and echo
         let new_mode = CONSOLE_MODE(
-            mode.0 & !(ENABLE_LINE_INPUT.0 | ENABLE_ECHO_INPUT.0 | ENABLE_PROCESSED_INPUT.0)
+            mode.0 & !(ENABLE_LINE_INPUT.0 | ENABLE_ECHO_INPUT.0 | ENABLE_PROCESSED_INPUT.0),
         );
         // SAFETY: SetConsoleMode is safe with valid handle
         unsafe {
@@ -370,9 +387,8 @@ impl Console {
 
     /// Restores normal input mode.
     pub fn restore_input_mode(&self) -> Result<()> {
-        let mode = CONSOLE_MODE(
-            ENABLE_LINE_INPUT.0 | ENABLE_ECHO_INPUT.0 | ENABLE_PROCESSED_INPUT.0
-        );
+        let mode =
+            CONSOLE_MODE(ENABLE_LINE_INPUT.0 | ENABLE_ECHO_INPUT.0 | ENABLE_PROCESSED_INPUT.0);
         // SAFETY: SetConsoleMode is safe with valid handle
         unsafe {
             SetConsoleMode(self.input, mode)?;
@@ -459,4 +475,3 @@ mod tests {
         }
     }
 }
-

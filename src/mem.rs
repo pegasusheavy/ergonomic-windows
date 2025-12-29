@@ -8,10 +8,10 @@ use std::ptr::NonNull;
 use windows::Win32::Foundation::HANDLE;
 use windows::Win32::System::Memory::{
     GetProcessHeap, HeapAlloc, HeapCreate, HeapDestroy, HeapFree, HeapReAlloc, HeapSize,
-    VirtualAlloc, VirtualFree, VirtualLock, VirtualProtect, VirtualQuery, VirtualUnlock,
-    HEAP_FLAGS, HEAP_NONE, MEMORY_BASIC_INFORMATION, MEM_COMMIT, MEM_DECOMMIT, MEM_RELEASE,
-    MEM_RESERVE, PAGE_EXECUTE, PAGE_EXECUTE_READ, PAGE_EXECUTE_READWRITE, PAGE_NOACCESS,
-    PAGE_PROTECTION_FLAGS, PAGE_READONLY, PAGE_READWRITE,
+    VirtualAlloc, VirtualFree, VirtualLock, VirtualProtect, VirtualQuery, VirtualUnlock, HEAP_NONE,
+    MEMORY_BASIC_INFORMATION, MEM_COMMIT, MEM_DECOMMIT, MEM_RELEASE, MEM_RESERVE, PAGE_EXECUTE,
+    PAGE_EXECUTE_READ, PAGE_EXECUTE_READWRITE, PAGE_NOACCESS, PAGE_PROTECTION_FLAGS, PAGE_READONLY,
+    PAGE_READWRITE,
 };
 use windows::Win32::System::SystemInformation::{
     GetSystemInfo, GlobalMemoryStatusEx, MEMORYSTATUSEX, SYSTEM_INFO,
@@ -91,14 +91,7 @@ impl VirtualMemory {
     /// Reserved memory must be committed before it can be accessed.
     pub fn reserve(size: usize) -> Result<Self> {
         // SAFETY: VirtualAlloc is safe with MEM_RESERVE
-        let ptr = unsafe {
-            VirtualAlloc(
-                None,
-                size,
-                MEM_RESERVE,
-                PAGE_NOACCESS,
-            )
-        };
+        let ptr = unsafe { VirtualAlloc(None, size, MEM_RESERVE, PAGE_NOACCESS) };
 
         if ptr.is_null() {
             return Err(crate::error::last_error());
@@ -141,18 +134,19 @@ impl VirtualMemory {
 
         // SAFETY: We own this memory and the parameters are valid
         unsafe {
-            VirtualFree(
-                self.ptr.as_ptr().add(offset) as *mut _,
-                size,
-                MEM_DECOMMIT,
-            )?;
+            VirtualFree(self.ptr.as_ptr().add(offset) as *mut _, size, MEM_DECOMMIT)?;
         }
 
         Ok(())
     }
 
     /// Changes the protection of a region.
-    pub fn protect(&self, offset: usize, size: usize, protection: Protection) -> Result<Protection> {
+    pub fn protect(
+        &self,
+        offset: usize,
+        size: usize,
+        protection: Protection,
+    ) -> Result<Protection> {
         if offset + size > self.size {
             return Err(Error::custom("Protect region exceeds allocation size"));
         }
@@ -374,7 +368,12 @@ impl Heap {
     ///
     /// `ptr` must have been allocated from this heap.
     pub unsafe fn realloc(&self, ptr: NonNull<u8>, new_size: usize) -> Result<NonNull<u8>> {
-        let new_ptr = HeapReAlloc(self.handle, HEAP_NONE, Some(ptr.as_ptr() as *const _), new_size);
+        let new_ptr = HeapReAlloc(
+            self.handle,
+            HEAP_NONE,
+            Some(ptr.as_ptr() as *const _),
+            new_size,
+        );
 
         if new_ptr.is_null() {
             return Err(crate::error::last_error());
@@ -575,4 +574,3 @@ mod tests {
         assert!(info.region_size >= 4096);
     }
 }
-
