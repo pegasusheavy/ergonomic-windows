@@ -98,7 +98,7 @@ dhat = { version = "0.3", optional = true }
 webview2-com = { version = "0.33", optional = true }
 
 [dev-dependencies]
-criterion = { version = "0.5", features = ["html_reports"] }
+criterion = { version = "0.8", features = ["html_reports"] }
 tracking-allocator = "0.4"
 
 [features]
