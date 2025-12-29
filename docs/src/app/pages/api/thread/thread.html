@@ -1,0 +1,179 @@
+<div class="prose max-w-none">
+  <div class="flex items-center space-x-3 mb-6">
+    <span class="w-3 h-3 bg-indigo-500 rounded-full"></span>
+    <h1 class="text-4xl font-bold text-gray-900 m-0">Threading &amp; Synchronization</h1>
+  </div>
+  <p class="text-xl text-gray-600 mb-8">
+    Safe wrappers for Windows threading APIs including threads, mutexes, events, and semaphores.
+  </p>
+
+  <div class="bg-gray-100 rounded-lg p-4 mb-8">
+    <code class="text-sm">use ergonomic_windows::thread::*;</code>
+  </div>
+
+  <!-- Thread -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Thread</h2>
+    <p class="text-gray-700 mb-4">
+      A Windows thread handle with RAII cleanup. Spawns threads that execute closures and automatically
+      manages the thread handle lifetime.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">spawn&lt;F&gt;(f: F) -&gt; Result&lt;Thread&gt;</h4>
+        <p class="text-gray-600 text-sm">Spawns a new thread that executes the given closure. Returns the exit code when joined.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">join(self) -&gt; Result&lt;u32&gt;</h4>
+        <p class="text-gray-600 text-sm">Waits for the thread to finish and returns its exit code.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">id(&amp;self) -&gt; u32</h4>
+        <p class="text-gray-600 text-sm">Returns the thread ID.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">suspend(&amp;self) / resume(&amp;self)</h4>
+        <p class="text-gray-600 text-sm">Suspends or resumes the thread. Returns the previous suspend count.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::thread::Thread;
+
+<span class="text-purple-400">let</span> thread = Thread::spawn(|| &#123;
+    println!(<span class="text-green-400">"Hello from thread!"</span>);
+    <span class="text-yellow-400">42</span>
+&#125;)?;
+
+<span class="text-purple-400">let</span> exit_code = thread.join()?;
+assert_eq!(exit_code, <span class="text-yellow-400">42</span>);</code></pre>
+    </div>
+  </section>
+
+  <!-- Mutex -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Mutex</h2>
+    <p class="text-gray-700 mb-4">
+      A Windows mutex (mutual exclusion) object. Can be named for cross-process synchronization.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new(initial_owner: bool) -&gt; Result&lt;Mutex&gt;</h4>
+        <p class="text-gray-600 text-sm">Creates a new unnamed mutex.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new_named(name: &amp;str, initial_owner: bool) -&gt; Result&lt;Mutex&gt;</h4>
+        <p class="text-gray-600 text-sm">Creates a named mutex that can be shared across processes.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">lock(&amp;self) -&gt; Result&lt;MutexGuard&gt;</h4>
+        <p class="text-gray-600 text-sm">Acquires the mutex, blocking until available. Returns an RAII guard.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">try_lock(&amp;self) -&gt; Result&lt;Option&lt;MutexGuard&gt;&gt;</h4>
+        <p class="text-gray-600 text-sm">Tries to acquire the mutex without blocking.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::thread::Mutex;
+
+<span class="text-purple-400">let</span> mutex = Mutex::new(<span class="text-yellow-400">false</span>)?;
+&#123;
+    <span class="text-purple-400">let</span> _guard = mutex.lock()?;
+    <span class="text-gray-500">// Protected region - mutex is held</span>
+&#125; <span class="text-gray-500">// Mutex automatically released here</span></code></pre>
+    </div>
+  </section>
+
+  <!-- Event -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Event</h2>
+    <p class="text-gray-700 mb-4">
+      A Windows event object for thread signaling. Supports manual-reset and auto-reset modes.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new_manual(initial_state: bool) -&gt; Result&lt;Event&gt;</h4>
+        <p class="text-gray-600 text-sm">Creates a manual-reset event (stays signaled until explicitly reset).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new_auto(initial_state: bool) -&gt; Result&lt;Event&gt;</h4>
+        <p class="text-gray-600 text-sm">Creates an auto-reset event (automatically resets after releasing one waiter).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">set(&amp;self) / reset(&amp;self)</h4>
+        <p class="text-gray-600 text-sm">Sets the event to signaled or resets it to non-signaled.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">wait(&amp;self) / wait_timeout(&amp;self, timeout: Option&lt;Duration&gt;)</h4>
+        <p class="text-gray-600 text-sm">Waits for the event to be signaled.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::thread::Event;
+
+<span class="text-purple-400">let</span> event = Event::new_manual(<span class="text-yellow-400">false</span>)?;
+
+<span class="text-gray-500">// In another thread:</span>
+event.set()?; <span class="text-gray-500">// Signal the event</span>
+
+<span class="text-gray-500">// In waiting thread:</span>
+event.wait()?; <span class="text-gray-500">// Blocks until signaled</span></code></pre>
+    </div>
+  </section>
+
+  <!-- Semaphore -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Semaphore</h2>
+    <p class="text-gray-700 mb-4">
+      A Windows semaphore for controlling access to a limited number of resources.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new(initial_count: i32, max_count: i32) -&gt; Result&lt;Semaphore&gt;</h4>
+        <p class="text-gray-600 text-sm">Creates a new semaphore with initial and maximum counts.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">acquire(&amp;self) -&gt; Result&lt;()&gt;</h4>
+        <p class="text-gray-600 text-sm">Acquires the semaphore (decrements count), blocking if count is zero.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">release(&amp;self) -&gt; Result&lt;i32&gt;</h4>
+        <p class="text-gray-600 text-sm">Releases the semaphore (increments count). Returns previous count.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Helper Functions -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Helper Functions</h2>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">current_thread_id() -&gt; u32</h4>
+        <p class="text-gray-600 text-sm">Gets the current thread's ID.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">sleep(duration: Duration)</h4>
+        <p class="text-gray-600 text-sm">Sleeps the current thread for the specified duration.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">yield_now()</h4>
+        <p class="text-gray-600 text-sm">Yields the current thread's time slice to other threads.</p>
+      </div>
+    </div>
+  </section>
+</div>
+

@@ -1,0 +1,138 @@
+<div class="prose max-w-none">
+  <div class="flex items-center space-x-3 mb-6">
+    <span class="w-3 h-3 bg-sky-500 rounded-full"></span>
+    <h1 class="text-4xl font-bold text-gray-900 m-0">System Information</h1>
+  </div>
+  <p class="text-xl text-gray-600 mb-8">
+    Query Windows system information including OS version, processor details, and computer identity.
+  </p>
+
+  <div class="bg-gray-100 rounded-lg p-4 mb-8">
+    <code class="text-sm">use ergonomic_windows::sysinfo::*;</code>
+  </div>
+
+  <!-- OsVersion -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">OsVersion</h2>
+    <p class="text-gray-700 mb-4">
+      Operating system version information.
+    </p>
+
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">get() -&gt; Result&lt;OsVersion&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the current OS version.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_windows_10_or_later(&amp;self) -&gt; bool</h4>
+        <p class="text-gray-600 text-sm">Checks if running on Windows 10+.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_windows_11_or_later(&amp;self) -&gt; bool</h4>
+        <p class="text-gray-600 text-sm">Checks if running on Windows 11+ (build 22000+).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">display_string(&amp;self) -&gt; String</h4>
+        <p class="text-gray-600 text-sm">Returns a human-readable version string.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Fields</h4>
+    <div class="grid grid-cols-3 gap-2">
+      <code class="text-xs bg-gray-100 p-2 rounded">major: u32</code>
+      <code class="text-xs bg-gray-100 p-2 rounded">minor: u32</code>
+      <code class="text-xs bg-gray-100 p-2 rounded">build: u32</code>
+      <code class="text-xs bg-gray-100 p-2 rounded">service_pack_major</code>
+      <code class="text-xs bg-gray-100 p-2 rounded">service_pack_minor</code>
+      <code class="text-xs bg-gray-100 p-2 rounded">product_type</code>
+    </div>
+  </section>
+
+  <!-- ProcessorInfo -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">ProcessorInfo</h2>
+    <p class="text-gray-700 mb-4">
+      System processor information.
+    </p>
+
+    <div class="border border-gray-200 rounded-lg p-4 mb-4">
+      <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">processor_info() -&gt; ProcessorInfo</h4>
+      <p class="text-gray-600 text-sm">Gets processor information for the system.</p>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Fields</h4>
+    <div class="space-y-2">
+      <div class="grid grid-cols-2 gap-4">
+        <div class="border border-gray-200 rounded p-2">
+          <code class="text-xs">architecture</code>
+          <p class="text-gray-500 text-xs">ProcessorArchitecture enum</p>
+        </div>
+        <div class="border border-gray-200 rounded p-2">
+          <code class="text-xs">processor_count</code>
+          <p class="text-gray-500 text-xs">Number of logical processors</p>
+        </div>
+        <div class="border border-gray-200 rounded p-2">
+          <code class="text-xs">page_size</code>
+          <p class="text-gray-500 text-xs">Memory page size in bytes</p>
+        </div>
+        <div class="border border-gray-200 rounded p-2">
+          <code class="text-xs">allocation_granularity</code>
+          <p class="text-gray-500 text-xs">Virtual memory allocation granularity</p>
+        </div>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">ProcessorArchitecture</h4>
+    <div class="grid grid-cols-5 gap-2">
+      <code class="text-xs bg-gray-100 p-2 rounded text-center">X86</code>
+      <code class="text-xs bg-gray-100 p-2 rounded text-center">X64</code>
+      <code class="text-xs bg-gray-100 p-2 rounded text-center">Arm</code>
+      <code class="text-xs bg-gray-100 p-2 rounded text-center">Arm64</code>
+      <code class="text-xs bg-gray-100 p-2 rounded text-center">Unknown</code>
+    </div>
+  </section>
+
+  <!-- Computer Names -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Computer Names</h2>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">hostname() -&gt; Result&lt;String&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the NetBIOS computer name.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">dns_hostname() -&gt; Result&lt;String&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the DNS hostname.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">dns_domain() -&gt; Result&lt;String&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the DNS domain name.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">fqdn() -&gt; Result&lt;String&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the fully qualified domain name.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- System Summary -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">System Summary</h2>
+    <div class="border border-gray-200 rounded-lg p-4 mb-4">
+      <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">system_summary() -&gt; Result&lt;SystemSummary&gt;</h4>
+      <p class="text-gray-600 text-sm">Gets a comprehensive summary of system information.</p>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::sysinfo::system_summary;
+
+<span class="text-purple-400">let</span> info = system_summary()?;
+println!(<span class="text-green-400">"OS: &#123;&#125;"</span>, info.os_version);
+println!(<span class="text-green-400">"Hostname: &#123;&#125;"</span>, info.hostname);
+println!(<span class="text-green-400">"CPUs: &#123;&#125;"</span>, info.processor.processor_count);
+println!(<span class="text-green-400">"RAM: &#123;&#125; GB"</span>, info.memory.total_physical / <span class="text-yellow-400">1024</span> / <span class="text-yellow-400">1024</span> / <span class="text-yellow-400">1024</span>);</code></pre>
+    </div>
+  </section>
+</div>
+

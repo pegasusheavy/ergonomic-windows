@@ -22,10 +22,10 @@ impl Library {
     /// Loads a library from the specified path.
     pub fn load(path: impl AsRef<Path>) -> Result<Self> {
         let path_wide = WideString::from_path(path.as_ref());
-        
+
         // SAFETY: LoadLibraryW is safe with a valid path
         let handle = unsafe { LoadLibraryW(path_wide.as_pcwstr())? };
-        
+
         Ok(Self {
             handle,
             owned: true,
@@ -35,12 +35,12 @@ impl Library {
     /// Loads a library with specific flags.
     pub fn load_with_flags(path: impl AsRef<Path>, flags: LoadFlags) -> Result<Self> {
         let path_wide = WideString::from_path(path.as_ref());
-        
+
         // SAFETY: LoadLibraryExW is safe with valid parameters
-        let handle = unsafe { 
-            LoadLibraryExW(path_wide.as_pcwstr(), None, flags.to_native())? 
+        let handle = unsafe {
+            LoadLibraryExW(path_wide.as_pcwstr(), None, flags.to_native())?
         };
-        
+
         Ok(Self {
             handle,
             owned: true,
@@ -50,10 +50,10 @@ impl Library {
     /// Gets a handle to an already-loaded library.
     pub fn get(name: &str) -> Result<Self> {
         let name_wide = WideString::new(name);
-        
+
         // SAFETY: GetModuleHandleW is safe with a valid name
         let handle = unsafe { GetModuleHandleW(name_wide.as_pcwstr())? };
-        
+
         Ok(Self {
             handle,
             owned: false, // Don't free - we didn't load it
@@ -64,7 +64,7 @@ impl Library {
     pub fn current() -> Result<Self> {
         // SAFETY: GetModuleHandleW with NULL returns the current module
         let handle = unsafe { GetModuleHandleW(None)? };
-        
+
         Ok(Self {
             handle,
             owned: false,
@@ -82,9 +82,9 @@ impl Library {
     {
         let name_cstr = std::ffi::CString::new(name)
             .map_err(|_| Error::custom("Invalid function name"))?;
-        
+
         let proc = GetProcAddress(self.handle, windows::core::PCSTR(name_cstr.as_ptr() as *const u8));
-        
+
         match proc {
             Some(p) => Ok(std::mem::transmute_copy(&p)),
             None => Err(Error::custom(format!("Function '{}' not found", name))),
@@ -94,16 +94,16 @@ impl Library {
     /// Gets the path to the loaded library.
     pub fn path(&self) -> Result<std::path::PathBuf> {
         let mut buffer = vec![0u16; 32768]; // MAX_PATH is not enough for extended paths
-        
+
         // SAFETY: GetModuleFileNameW is safe with valid parameters
-        let len = unsafe { 
-            GetModuleFileNameW(self.handle, &mut buffer) 
+        let len = unsafe {
+            GetModuleFileNameW(self.handle, &mut buffer)
         } as usize;
-        
+
         if len == 0 {
             return Err(crate::error::last_error());
         }
-        
+
         let path_str = crate::string::from_wide(&buffer[..len])?;
         Ok(std::path::PathBuf::from(path_str))
     }
@@ -132,16 +132,16 @@ pub struct LoadFlags(u32);
 impl LoadFlags {
     /// No special flags.
     pub const NONE: Self = Self(0);
-    
+
     /// Load as a data file (no execution).
     pub const AS_DATAFILE: Self = Self(LOAD_LIBRARY_AS_DATAFILE.0);
-    
+
     /// Load as an image resource.
     pub const AS_IMAGE_RESOURCE: Self = Self(LOAD_LIBRARY_AS_IMAGE_RESOURCE.0);
-    
+
     /// Search the DLL's directory for dependencies.
     pub const SEARCH_DLL_LOAD_DIR: Self = Self(LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR.0);
-    
+
     /// Search only System32 for dependencies.
     pub const SEARCH_SYSTEM32: Self = Self(LOAD_LIBRARY_SEARCH_SYSTEM32.0);
 
@@ -195,13 +195,13 @@ mod tests {
     #[test]
     fn test_get_proc() {
         let kernel32 = Library::get("kernel32.dll").unwrap();
-        
+
         // GetCurrentProcessId is always available
         type GetCurrentProcessIdFn = unsafe extern "system" fn() -> u32;
-        let get_pid: GetCurrentProcessIdFn = unsafe { 
-            kernel32.get_proc("GetCurrentProcessId").unwrap() 
+        let get_pid: GetCurrentProcessIdFn = unsafe {
+            kernel32.get_proc("GetCurrentProcessId").unwrap()
         };
-        
+
         let pid = unsafe { get_pid() };
         assert!(pid > 0);
         assert_eq!(pid, std::process::id());

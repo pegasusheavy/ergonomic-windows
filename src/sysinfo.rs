@@ -69,7 +69,7 @@ pub fn processor_info() -> ProcessorInfo {
     }
 
     let arch = unsafe { info.Anonymous.Anonymous.wProcessorArchitecture };
-    
+
     ProcessorInfo {
         architecture: ProcessorArchitecture::from_id(arch.0),
         processor_count: info.dwNumberOfProcessors,
@@ -204,17 +204,17 @@ impl ComputerNameType {
 /// Gets a computer name.
 pub fn computer_name(name_type: ComputerNameType) -> Result<String> {
     let mut size = 0u32;
-    
+
     // First call to get size
     // SAFETY: GetComputerNameExW is safe
     let _ = unsafe { GetComputerNameExW(name_type.to_native(), windows::core::PWSTR::null(), &mut size) };
-    
+
     if size == 0 {
         return Ok(String::new());
     }
-    
+
     let mut buffer = vec![0u16; size as usize];
-    
+
     // SAFETY: GetComputerNameExW is safe with valid buffer
     unsafe {
         GetComputerNameExW(
@@ -223,7 +223,7 @@ pub fn computer_name(name_type: ComputerNameType) -> Result<String> {
             &mut size,
         )?;
     }
-    
+
     from_wide(&buffer[..size as usize])
 }
 

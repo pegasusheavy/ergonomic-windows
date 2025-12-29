@@ -52,14 +52,14 @@ impl Token {
     /// Opens the token for the current process with specific access.
     pub fn current_process_with_access(access: TOKEN_ACCESS_MASK) -> Result<Self> {
         let mut handle = HANDLE::default();
-        
+
         // SAFETY: GetCurrentProcess always returns a valid pseudo-handle,
         // and OpenProcessToken is safe with valid parameters
         unsafe {
             let process = GetCurrentProcess();
             OpenProcessToken(process, access, &mut handle)?;
         }
-        
+
         Ok(Self {
             handle: OwnedHandle::new(handle)?,
         })
@@ -73,12 +73,12 @@ impl Token {
     /// Opens the token for a specific process with specific access.
     pub fn for_process_with_access(process: HANDLE, access: TOKEN_ACCESS_MASK) -> Result<Self> {
         let mut handle = HANDLE::default();
-        
+
         // SAFETY: OpenProcessToken is safe with valid parameters
         unsafe {
             OpenProcessToken(process, access, &mut handle)?;
         }
-        
+
         Ok(Self {
             handle: OwnedHandle::new(handle)?,
         })
@@ -88,7 +88,7 @@ impl Token {
     pub fn is_elevated(&self) -> Result<bool> {
         let mut elevation = TOKEN_ELEVATION::default();
         let mut size = 0u32;
-        
+
         // SAFETY: GetTokenInformation is safe with valid parameters
         unsafe {
             GetTokenInformation(
@@ -99,7 +99,7 @@ impl Token {
                 &mut size,
             )?;
         }
-        
+
         Ok(elevation.TokenIsElevated != 0)
     }
 
@@ -119,12 +119,12 @@ impl Token {
     fn adjust_privilege(&self, privilege_name: &str, enable: bool) -> Result<bool> {
         let name_wide = WideString::new(privilege_name);
         let mut luid = LUID::default();
-        
+
         // SAFETY: LookupPrivilegeValueW is safe with valid parameters
         unsafe {
             LookupPrivilegeValueW(None, name_wide.as_pcwstr(), &mut luid)?;
         }
-        
+
         let mut tp = TOKEN_PRIVILEGES {
             PrivilegeCount: 1,
             Privileges: [LUID_AND_ATTRIBUTES {
@@ -132,10 +132,10 @@ impl Token {
                 Attributes: if enable { SE_PRIVILEGE_ENABLED } else { Default::default() },
             }],
         };
-        
+
         let mut previous_state = TOKEN_PRIVILEGES::default();
         let mut return_length = 0u32;
-        
+
         // SAFETY: AdjustTokenPrivileges is safe with valid parameters
         unsafe {
             AdjustTokenPrivileges(
@@ -147,7 +147,7 @@ impl Token {
                 Some(&mut return_length),
             )?;
         }
-        
+
         // Return whether it was previously enabled
         if previous_state.PrivilegeCount > 0 {
             Ok(previous_state.Privileges[0].Attributes.0 & SE_PRIVILEGE_ENABLED.0 != 0)
@@ -160,12 +160,12 @@ impl Token {
     pub fn has_privilege(&self, privilege_name: &str) -> Result<bool> {
         let name_wide = WideString::new(privilege_name);
         let mut luid = LUID::default();
-        
+
         // SAFETY: LookupPrivilegeValueW is safe with valid parameters
         unsafe {
             LookupPrivilegeValueW(None, name_wide.as_pcwstr(), &mut luid)?;
         }
-        
+
         // Get token privileges
         let mut size = 0u32;
         let _ = unsafe {
@@ -177,13 +177,13 @@ impl Token {
                 &mut size,
             )
         };
-        
+
         if size == 0 {
             return Ok(false);
         }
-        
+
         let mut buffer = vec![0u8; size as usize];
-        
+
         // SAFETY: GetTokenInformation is safe with valid buffer
         unsafe {
             GetTokenInformation(
@@ -194,21 +194,21 @@ impl Token {
                 &mut size,
             )?;
         }
-        
+
         // Parse the token privileges
         let privs = buffer.as_ptr() as *const TOKEN_PRIVILEGES;
         let count = unsafe { (*privs).PrivilegeCount } as usize;
-        
+
         for i in 0..count {
             let priv_ptr = unsafe { (*privs).Privileges.as_ptr().add(i) };
             let priv_luid = unsafe { (*priv_ptr).Luid };
             let priv_attrs = unsafe { (*priv_ptr).Attributes };
-            
+
             if priv_luid.LowPart == luid.LowPart && priv_luid.HighPart == luid.HighPart {
                 return Ok(priv_attrs.0 & SE_PRIVILEGE_ENABLED.0 != 0);
             }
         }
-        
+
         Ok(false)
     }
 
@@ -226,18 +226,18 @@ pub fn is_elevated() -> Result<bool> {
 /// Gets the name of a privilege from its LUID.
 pub fn privilege_name(luid: LUID) -> Result<String> {
     let mut size = 0u32;
-    
+
     // Get required size
     let _ = unsafe {
         LookupPrivilegeNameW(None, &luid, windows::core::PWSTR::null(), &mut size)
     };
-    
+
     if size == 0 {
         return Err(crate::error::last_error());
     }
-    
+
     let mut buffer = vec![0u16; size as usize];
-    
+
     // SAFETY: LookupPrivilegeNameW is safe with valid buffer
     unsafe {
         LookupPrivilegeNameW(
@@ -247,7 +247,7 @@ pub fn privilege_name(luid: LUID) -> Result<String> {
             &mut size,
         )?;
     }
-    
+
     crate::string::from_wide(&buffer[..size as usize])
 }
 

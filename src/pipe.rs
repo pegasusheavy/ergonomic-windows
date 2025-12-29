@@ -328,7 +328,7 @@ mod tests {
     #[test]
     fn test_anonymous_pipe() {
         let pipe = AnonymousPipe::new().unwrap();
-        
+
         // Write from write end
         let data = b"Hello, pipe!";
         let mut written = 0u32;
@@ -360,7 +360,7 @@ mod tests {
     fn test_unique_pipe_name() {
         let name1 = unique_pipe_name("test");
         let name2 = unique_pipe_name("test");
-        
+
         assert!(name1.starts_with(r"\\.\pipe\test_"));
         // Names should be different (different timestamps)
         // But they might be the same if called too fast, so we just check format

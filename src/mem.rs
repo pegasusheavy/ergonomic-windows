@@ -357,7 +357,7 @@ impl Heap {
     /// Allocates zero-initialized memory from this heap.
     pub fn alloc_zeroed(&self, size: usize) -> Result<NonNull<u8>> {
         use windows::Win32::System::Memory::HEAP_ZERO_MEMORY;
-        
+
         // SAFETY: handle is valid
         let ptr = unsafe { HeapAlloc(self.handle, HEAP_ZERO_MEMORY, size) };
 
@@ -515,10 +515,10 @@ mod tests {
     #[test]
     fn test_virtual_memory_reserve_commit() {
         let mem = VirtualMemory::reserve(65536).unwrap();
-        
+
         // Commit the first page
         mem.commit(0, 4096, Protection::ReadWrite).unwrap();
-        
+
         // Now we can use it
         unsafe {
             let ptr = mem.as_ptr();
@@ -530,20 +530,20 @@ mod tests {
     #[test]
     fn test_heap() {
         let heap = Heap::new().unwrap();
-        
+
         // Allocate some memory
         let ptr = heap.alloc(1024).unwrap();
-        
+
         // Write to it
         unsafe {
             *ptr.as_ptr() = 42;
             assert_eq!(*ptr.as_ptr(), 42);
         }
-        
+
         // Get size
         let size = unsafe { heap.size(ptr).unwrap() };
         assert!(size >= 1024);
-        
+
         // Free it
         unsafe {
             heap.free(ptr).unwrap();
@@ -569,7 +569,7 @@ mod tests {
     fn test_query_memory() {
         let mem = VirtualMemory::alloc(4096, Protection::ReadWrite).unwrap();
         let info = query_memory(mem.as_ptr()).unwrap();
-        
+
         assert!(info.is_committed);
         assert!(!info.is_free);
         assert!(info.region_size >= 4096);

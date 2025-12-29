@@ -496,22 +496,22 @@ mod tests {
     #[test]
     fn test_event_manual() {
         let event = Event::new_manual(false).unwrap();
-        
+
         // Should timeout since event is not signaled
         let result = event.wait_timeout(Some(Duration::from_millis(10))).unwrap();
         assert_eq!(result, WaitResult::Timeout);
-        
+
         // Signal the event
         event.set().unwrap();
-        
+
         // Should succeed immediately
         let result = event.wait_timeout(Some(Duration::from_millis(10))).unwrap();
         assert_eq!(result, WaitResult::Signaled);
-        
+
         // Manual reset - should still be signaled
         let result = event.wait_timeout(Some(Duration::from_millis(10))).unwrap();
         assert_eq!(result, WaitResult::Signaled);
-        
+
         // Reset and check
         event.reset().unwrap();
         let result = event.wait_timeout(Some(Duration::from_millis(10))).unwrap();
@@ -521,11 +521,11 @@ mod tests {
     #[test]
     fn test_event_auto() {
         let event = Event::new_auto(true).unwrap();
-        
+
         // Should succeed and auto-reset
         let result = event.wait_timeout(Some(Duration::from_millis(10))).unwrap();
         assert_eq!(result, WaitResult::Signaled);
-        
+
         // Should timeout since event auto-reset
         let result = event.wait_timeout(Some(Duration::from_millis(10))).unwrap();
         assert_eq!(result, WaitResult::Timeout);
@@ -534,19 +534,19 @@ mod tests {
     #[test]
     fn test_semaphore() {
         let sem = Semaphore::new(2, 2).unwrap();
-        
+
         // Acquire twice (initial count is 2)
         sem.acquire().unwrap();
         sem.acquire().unwrap();
-        
+
         // Third acquire should timeout
         let result = sem.acquire_timeout(Some(Duration::from_millis(10))).unwrap();
         assert_eq!(result, WaitResult::Timeout);
-        
+
         // Release one
         let prev = sem.release().unwrap();
         assert_eq!(prev, 0);
-        
+
         // Now we can acquire again
         sem.acquire().unwrap();
     }

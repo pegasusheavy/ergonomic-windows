@@ -153,7 +153,7 @@ impl Console {
         let mut buffer = vec![0u16; 1024];
         // SAFETY: GetConsoleTitle is safe with a valid buffer
         let len = unsafe { GetConsoleTitleW(&mut buffer) } as usize;
-        
+
         if len == 0 {
             return Ok(String::new());
         }
@@ -199,10 +199,10 @@ impl Console {
         // SAFETY: ReadConsoleW is safe with valid parameters
         unsafe {
             ReadConsoleW(
-                self.input, 
-                buffer.as_mut_ptr() as *mut _, 
+                self.input,
+                buffer.as_mut_ptr() as *mut _,
                 buffer.len() as u32,
-                &mut read, 
+                &mut read,
                 None
             )?;
         }

@@ -15,20 +15,20 @@ use windows::Win32::System::Environment::{
 /// Returns `None` if the variable doesn't exist.
 pub fn get(name: &str) -> Option<String> {
     let name_wide = WideString::new(name);
-    
+
     // First call to get the required size
     // SAFETY: GetEnvironmentVariableW is safe with valid parameters
     let size = unsafe { GetEnvironmentVariableW(name_wide.as_pcwstr(), None) };
-    
+
     if size == 0 {
         return None;
     }
 
     let mut buffer = vec![0u16; size as usize];
-    
+
     // SAFETY: GetEnvironmentVariableW is safe with valid buffer
     let len = unsafe { GetEnvironmentVariableW(name_wide.as_pcwstr(), Some(&mut buffer)) } as usize;
-    
+
     if len == 0 {
         return None;
     }
@@ -40,24 +40,24 @@ pub fn get(name: &str) -> Option<String> {
 pub fn set(name: &str, value: &str) -> Result<()> {
     let name_wide = WideString::new(name);
     let value_wide = WideString::new(value);
-    
+
     // SAFETY: SetEnvironmentVariableW is safe with valid strings
     unsafe {
         SetEnvironmentVariableW(name_wide.as_pcwstr(), value_wide.as_pcwstr())?;
     }
-    
+
     Ok(())
 }
 
 /// Removes an environment variable.
 pub fn remove(name: &str) -> Result<()> {
     let name_wide = WideString::new(name);
-    
+
     // SAFETY: SetEnvironmentVariableW with NULL value removes the variable
     unsafe {
         SetEnvironmentVariableW(name_wide.as_pcwstr(), None)?;
     }
-    
+
     Ok(())
 }
 
@@ -66,25 +66,25 @@ pub fn remove(name: &str) -> Result<()> {
 /// Replaces `%VARNAME%` with the value of the environment variable.
 pub fn expand(s: &str) -> Result<String> {
     let wide = to_wide(s);
-    
+
     // First call to get the required size
     // SAFETY: ExpandEnvironmentStringsW is safe with valid parameters
     let size = unsafe { ExpandEnvironmentStringsW(windows::core::PCWSTR(wide.as_ptr()), None) };
-    
+
     if size == 0 {
         return Err(crate::error::last_error());
     }
 
     let mut buffer = vec![0u16; size as usize];
-    
+
     // SAFETY: ExpandEnvironmentStringsW is safe with valid buffer
-    let len = unsafe { 
+    let len = unsafe {
         ExpandEnvironmentStringsW(
-            windows::core::PCWSTR(wide.as_ptr()), 
+            windows::core::PCWSTR(wide.as_ptr()),
             Some(&mut buffer)
-        ) 
+        )
     } as usize;
-    
+
     if len == 0 {
         return Err(crate::error::last_error());
     }
@@ -185,14 +185,14 @@ mod tests {
     #[test]
     fn test_get_set_remove() {
         let var_name = "ERGONOMIC_WINDOWS_TEST_VAR";
-        
+
         // Initially should not exist
         assert!(get(var_name).is_none());
-        
+
         // Set it
         set(var_name, "test_value").unwrap();
         assert_eq!(get(var_name), Some("test_value".to_string()));
-        
+
         // Remove it
         remove(var_name).unwrap();
         assert!(get(var_name).is_none());

@@ -1,0 +1,153 @@
+<div class="prose max-w-none">
+  <div class="flex items-center space-x-3 mb-6">
+    <span class="w-3 h-3 bg-violet-500 rounded-full"></span>
+    <h1 class="text-4xl font-bold text-gray-900 m-0">Pipes (IPC)</h1>
+  </div>
+  <p class="text-xl text-gray-600 mb-8">
+    Safe wrappers for Windows anonymous and named pipes for inter-process communication.
+  </p>
+
+  <div class="bg-gray-100 rounded-lg p-4 mb-8">
+    <code class="text-sm">use ergonomic_windows::pipe::*;</code>
+  </div>
+
+  <!-- Anonymous Pipes -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">AnonymousPipe</h2>
+    <p class="text-gray-700 mb-4">
+      A pair of handles for one-way communication, typically used between parent and child processes.
+    </p>
+
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new() -&gt; Result&lt;AnonymousPipe&gt;</h4>
+        <p class="text-gray-600 text-sm">Creates a new anonymous pipe with default buffer size.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">with_size(size: u32) -&gt; Result&lt;AnonymousPipe&gt;</h4>
+        <p class="text-gray-600 text-sm">Creates a pipe with a specific buffer size.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Fields</h4>
+    <ul class="list-disc list-inside text-gray-700 space-y-2">
+      <li><code>read: OwnedHandle</code> - The read end of the pipe</li>
+      <li><code>write: OwnedHandle</code> - The write end of the pipe</li>
+    </ul>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::pipe::AnonymousPipe;
+
+<span class="text-purple-400">let</span> pipe = AnonymousPipe::new()?;
+
+<span class="text-gray-500">// Write to pipe.write, read from pipe.read</span>
+<span class="text-gray-500">// Pass handles to child process for communication</span></code></pre>
+    </div>
+  </section>
+
+  <!-- Named Pipe Server -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">NamedPipeServer</h2>
+    <p class="text-gray-700 mb-4">
+      A named pipe server that can accept connections from clients across processes.
+    </p>
+
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new(name: &amp;str, access: PipeAccess, mode: PipeMode) -&gt; Result&lt;Self&gt;</h4>
+        <p class="text-gray-600 text-sm">Creates a new named pipe server. Name format: <code>\\.\pipe\pipename</code></p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">accept(&amp;self) -&gt; Result&lt;()&gt;</h4>
+        <p class="text-gray-600 text-sm">Waits for a client to connect (blocking).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">disconnect(&amp;self) -&gt; Result&lt;()&gt;</h4>
+        <p class="text-gray-600 text-sm">Disconnects from the current client.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">read(&amp;self, buffer: &amp;mut [u8]) -&gt; Result&lt;usize&gt;</h4>
+        <p class="text-gray-600 text-sm">Reads data from the pipe.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">write(&amp;self, data: &amp;[u8]) -&gt; Result&lt;usize&gt;</h4>
+        <p class="text-gray-600 text-sm">Writes data to the pipe.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">peek(&amp;self, buffer: &amp;mut [u8]) -&gt; Result&lt;(usize, usize)&gt;</h4>
+        <p class="text-gray-600 text-sm">Peeks at data without removing it. Returns (bytes read, total available).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Named Pipe Client -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">NamedPipeClient</h2>
+    <p class="text-gray-700 mb-4">
+      A client that connects to a named pipe server.
+    </p>
+
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">connect(name: &amp;str) -&gt; Result&lt;Self&gt;</h4>
+        <p class="text-gray-600 text-sm">Connects to a named pipe server.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">connect_timeout(name: &amp;str, timeout_ms: Option&lt;u32&gt;) -&gt; Result&lt;Self&gt;</h4>
+        <p class="text-gray-600 text-sm">Connects with a timeout waiting for the server.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">set_message_mode(&amp;self) -&gt; Result&lt;()&gt;</h4>
+        <p class="text-gray-600 text-sm">Sets the pipe to message mode.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">read(&amp;self, ...) / write(&amp;self, ...)</h4>
+        <p class="text-gray-600 text-sm">Read and write operations (same as server).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Enums -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Enums</h2>
+    
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">PipeAccess</h3>
+    <div class="grid grid-cols-3 gap-4 mb-6">
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-sm font-mono">Inbound</code>
+        <p class="text-gray-600 text-xs mt-1">Read-only</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-sm font-mono">Outbound</code>
+        <p class="text-gray-600 text-xs mt-1">Write-only</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-sm font-mono">Duplex</code>
+        <p class="text-gray-600 text-xs mt-1">Read-write</p>
+      </div>
+    </div>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">PipeMode</h3>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-sm font-mono">Byte</code>
+        <p class="text-gray-600 text-xs mt-1">Data as stream of bytes</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-sm font-mono">Message</code>
+        <p class="text-gray-600 text-xs mt-1">Data as discrete messages</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Helper -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Helper Functions</h2>
+    <div class="border border-gray-200 rounded-lg p-4">
+      <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">unique_pipe_name(prefix: &amp;str) -&gt; String</h4>
+      <p class="text-gray-600 text-sm">Generates a unique pipe name using process ID and timestamp.</p>
+    </div>
+  </section>
+</div>
+

@@ -1,0 +1,150 @@
+<div class="prose max-w-none">
+  <div class="flex items-center space-x-3 mb-6">
+    <span class="w-3 h-3 bg-cyan-500 rounded-full"></span>
+    <h1 class="text-4xl font-bold text-gray-900 m-0">Memory Management</h1>
+  </div>
+  <p class="text-xl text-gray-600 mb-8">
+    Safe wrappers for Windows virtual memory, heaps, and memory information queries.
+  </p>
+
+  <div class="bg-gray-100 rounded-lg p-4 mb-8">
+    <code class="text-sm">use ergonomic_windows::mem::*;</code>
+  </div>
+
+  <!-- VirtualMemory -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">VirtualMemory</h2>
+    <p class="text-gray-700 mb-4">
+      A region of virtual memory with RAII cleanup. Supports allocation, reservation, commit/decommit,
+      and memory protection changes.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">alloc(size: usize, protection: Protection) -&gt; Result&lt;VirtualMemory&gt;</h4>
+        <p class="text-gray-600 text-sm">Allocates committed virtual memory initialized to zero.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">reserve(size: usize) -&gt; Result&lt;VirtualMemory&gt;</h4>
+        <p class="text-gray-600 text-sm">Reserves virtual memory without committing it.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">commit(&amp;self, offset: usize, size: usize, protection: Protection)</h4>
+        <p class="text-gray-600 text-sm">Commits a portion of reserved memory.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">protect(&amp;self, offset: usize, size: usize, protection: Protection)</h4>
+        <p class="text-gray-600 text-sm">Changes memory protection. Returns the previous protection.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">lock(&amp;self, ...) / unlock(&amp;self, ...)</h4>
+        <p class="text-gray-600 text-sm">Locks memory into physical RAM (prevents paging).</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::mem::&#123;VirtualMemory, Protection&#125;;
+
+<span class="text-gray-500">// Allocate 4KB of read-write memory</span>
+<span class="text-purple-400">let mut</span> mem = VirtualMemory::alloc(<span class="text-yellow-400">4096</span>, Protection::ReadWrite)?;
+
+<span class="text-gray-500">// Write to it</span>
+<span class="text-purple-400">unsafe</span> &#123;
+    <span class="text-purple-400">let</span> slice = mem.as_mut_slice();
+    slice[<span class="text-yellow-400">0</span>] = <span class="text-yellow-400">42</span>;
+&#125;
+<span class="text-gray-500">// Memory is automatically freed when dropped</span></code></pre>
+    </div>
+  </section>
+
+  <!-- Protection -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Protection</h2>
+    <p class="text-gray-700 mb-4">Memory protection flags:</p>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-sm font-mono">NoAccess</code>
+        <p class="text-gray-600 text-xs mt-1">No access allowed</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-sm font-mono">ReadOnly</code>
+        <p class="text-gray-600 text-xs mt-1">Read-only access</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-sm font-mono">ReadWrite</code>
+        <p class="text-gray-600 text-xs mt-1">Read-write access</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-sm font-mono">Execute</code>
+        <p class="text-gray-600 text-xs mt-1">Execute only</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-sm font-mono">ExecuteRead</code>
+        <p class="text-gray-600 text-xs mt-1">Execute and read</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-sm font-mono">ExecuteReadWrite</code>
+        <p class="text-gray-600 text-xs mt-1">Execute, read, and write</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Heap -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Heap</h2>
+    <p class="text-gray-700 mb-4">
+      A Windows heap for dynamic memory allocation. Useful for creating private heaps.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new() -&gt; Result&lt;Heap&gt;</h4>
+        <p class="text-gray-600 text-sm">Creates a new private heap.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">process_heap() -&gt; Result&lt;Heap&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the process's default heap.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">alloc(&amp;self, size: usize) -&gt; Result&lt;NonNull&lt;u8&gt;&gt;</h4>
+        <p class="text-gray-600 text-sm">Allocates memory from the heap.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">free(&amp;self, ptr: NonNull&lt;u8&gt;) -&gt; Result&lt;()&gt;</h4>
+        <p class="text-gray-600 text-sm">Frees memory allocated from this heap.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Memory Status -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Memory Status</h2>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">memory_status() -&gt; Result&lt;MemoryStatus&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets current memory status including total/available physical memory, page file, and virtual memory.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">system_info() -&gt; SystemMemoryInfo</h4>
+        <p class="text-gray-600 text-sm">Gets system memory info (page size, allocation granularity, processor count).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">query_memory(address: *const u8) -&gt; Result&lt;MemoryInfo&gt;</h4>
+        <p class="text-gray-600 text-sm">Queries information about a specific memory region.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::mem::memory_status;
+
+<span class="text-purple-400">let</span> status = memory_status()?;
+println!(<span class="text-green-400">"Memory load: &#123;&#125;%"</span>, status.memory_load);
+println!(<span class="text-green-400">"Available RAM: &#123;&#125; MB"</span>, status.available_physical / <span class="text-yellow-400">1024</span> / <span class="text-yellow-400">1024</span>);</code></pre>
+    </div>
+  </section>
+</div>
+

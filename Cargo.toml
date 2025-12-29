@@ -17,18 +17,18 @@ categories = ["os::windows-apis", "api-bindings", "development-tools::ffi"]
 windows = { version = "0.58", features = [
     # Foundation
     "Win32_Foundation",
-    
+
     # Threading & Synchronization
     "Win32_System_Threading",
     "Win32_System_ProcessStatus",
-    
+
     # Security
     "Win32_Security",
     "Win32_Security_Authorization",
-    
+
     # Storage & File System
     "Win32_Storage_FileSystem",
-    
+
     # System
     "Win32_System_IO",
     "Win32_System_Registry",
@@ -43,18 +43,18 @@ windows = { version = "0.58", features = [
     "Win32_System_Performance",
     "Win32_System_Power",
     "Win32_System_SystemServices",
-    
+
     # UI
     "Win32_UI_WindowsAndMessaging",
     "Win32_UI_Input_KeyboardAndMouse",
     "Win32_UI_Shell",
-    
+
     # Graphics
     "Win32_Graphics_Gdi",
-    
+
     # Globalization
     "Win32_Globalization",
-    
+
     # Networking (basic)
     "Win32_Networking_WinSock",
     "Win32_NetworkManagement_IpHelper",

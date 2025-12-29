@@ -41,77 +41,132 @@ ergonomic-windows = "0.1"</code></pre>
   </div>
 
   <!-- Features Grid -->
-  <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" aria-label="Features">
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-      <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
-        </svg>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">String Conversions</h3>
-      <p class="text-gray-600 text-sm">
-        Seamless UTF-8 to UTF-16 conversions with <code class="bg-gray-100 px-1 rounded">WideString</code> and builder patterns.
-      </p>
-    </div>
+  <section aria-label="Features">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Comprehensive Windows API Coverage</h2>
+    <p class="text-gray-600 mb-8">15+ modules wrapping essential Windows functionality with safe, ergonomic Rust APIs.</p>
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <!-- Core -->
+      <a routerLink="/api/string" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-blue-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-blue-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-blue-600">Strings</h3>
+        </div>
+        <p class="text-gray-500 text-sm">UTF-8 ↔ UTF-16 conversions</p>
+      </a>
 
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-      <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-        </svg>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">RAII Handle Management</h3>
-      <p class="text-gray-600 text-sm">
-        Automatic handle cleanup with <code class="bg-gray-100 px-1 rounded">OwnedHandle</code>. No more leaked resources.
-      </p>
-    </div>
+      <a routerLink="/api/handle" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-green-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-green-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-green-600">Handles</h3>
+        </div>
+        <p class="text-gray-500 text-sm">RAII handle management</p>
+      </a>
 
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-      <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
-        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-        </svg>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Process Management</h3>
-      <p class="text-gray-600 text-sm">
-        Spawn, wait, and manage Windows processes with a familiar builder API.
-      </p>
-    </div>
+      <a routerLink="/api/process" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-yellow-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-yellow-600">Processes</h3>
+        </div>
+        <p class="text-gray-500 text-sm">Spawn and manage processes</p>
+      </a>
 
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-      <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
-        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
-        </svg>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Registry Access</h3>
-      <p class="text-gray-600 text-sm">
-        Read and write registry keys with typed values. Supports all common registry types.
-      </p>
-    </div>
+      <a routerLink="/api/registry" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-purple-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-purple-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-purple-600">Registry</h3>
+        </div>
+        <p class="text-gray-500 text-sm">Read/write registry keys</p>
+      </a>
 
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-      <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4">
-        <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-        </svg>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">Window Creation</h3>
-      <p class="text-gray-600 text-sm">
-        Create native Windows with message handling using a trait-based event system.
-      </p>
-    </div>
+      <a routerLink="/api/window" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-pink-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-pink-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-pink-600">Windows</h3>
+        </div>
+        <p class="text-gray-500 text-sm">Native window creation</p>
+      </a>
 
-    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-      <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
-        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
-        </svg>
-      </div>
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">File System</h3>
-      <p class="text-gray-600 text-sm">
-        Windows-specific file operations including attributes, metadata, and more.
-      </p>
+      <a routerLink="/api/fs" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-orange-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-orange-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-orange-600">File System</h3>
+        </div>
+        <p class="text-gray-500 text-sm">Windows file operations</p>
+      </a>
+
+      <!-- Extended -->
+      <a routerLink="/api/thread" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-teal-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-teal-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-teal-600">Threading</h3>
+        </div>
+        <p class="text-gray-500 text-sm">Threads, mutexes, events</p>
+      </a>
+
+      <a routerLink="/api/mem" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-indigo-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-indigo-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-indigo-600">Memory</h3>
+        </div>
+        <p class="text-gray-500 text-sm">Virtual memory, heaps</p>
+      </a>
+
+      <a routerLink="/api/console" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-cyan-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-cyan-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-cyan-600">Console</h3>
+        </div>
+        <p class="text-gray-500 text-sm">Console I/O and colors</p>
+      </a>
+
+      <a routerLink="/api/env" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-lime-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-lime-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-lime-600">Environment</h3>
+        </div>
+        <p class="text-gray-500 text-sm">Environment variables</p>
+      </a>
+
+      <a routerLink="/api/pipe" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-violet-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-violet-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-violet-600">Pipes</h3>
+        </div>
+        <p class="text-gray-500 text-sm">Named/anonymous pipes</p>
+      </a>
+
+      <a routerLink="/api/time" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-amber-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-amber-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-amber-600">Time</h3>
+        </div>
+        <p class="text-gray-500 text-sm">High-res timers, system time</p>
+      </a>
+
+      <a routerLink="/api/module" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-rose-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-rose-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-rose-600">DLL Loading</h3>
+        </div>
+        <p class="text-gray-500 text-sm">Dynamic library loading</p>
+      </a>
+
+      <a routerLink="/api/sysinfo" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-sky-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-sky-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-sky-600">System Info</h3>
+        </div>
+        <p class="text-gray-500 text-sm">OS, CPU, memory info</p>
+      </a>
+
+      <a routerLink="/api/security" class="group bg-white p-4 rounded-lg shadow-sm border border-gray-200 hover:shadow-md hover:border-red-300 transition-all">
+        <div class="flex items-center mb-2">
+          <span class="w-3 h-3 bg-red-500 rounded-full mr-3"></span>
+          <h3 class="font-semibold text-gray-900 group-hover:text-red-600">Security</h3>
+        </div>
+        <p class="text-gray-500 text-sm">Tokens, privileges, elevation</p>
+      </a>
     </div>
   </section>
 

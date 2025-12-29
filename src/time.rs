@@ -403,10 +403,10 @@ mod tests {
         let mut sw = Stopwatch::start_new().unwrap();
         std::thread::sleep(Duration::from_millis(10));
         sw.stop().unwrap();
-        
+
         let elapsed = sw.elapsed().unwrap();
         assert!(elapsed >= Duration::from_millis(5));
-        
+
         // After stop, elapsed should not change
         std::thread::sleep(Duration::from_millis(10));
         let elapsed2 = sw.elapsed().unwrap();

@@ -1,0 +1,168 @@
+<div class="prose max-w-none">
+  <div class="flex items-center space-x-3 mb-6">
+    <span class="w-3 h-3 bg-red-500 rounded-full"></span>
+    <h1 class="text-4xl font-bold text-gray-900 m-0">Security &amp; Privileges</h1>
+  </div>
+  <p class="text-xl text-gray-600 mb-8">
+    Safe wrappers for Windows security tokens, privileges, and elevation checking.
+  </p>
+
+  <div class="bg-gray-100 rounded-lg p-4 mb-8">
+    <code class="text-sm">use ergonomic_windows::security::*;</code>
+  </div>
+
+  <!-- Token -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Token</h2>
+    <p class="text-gray-700 mb-4">
+      A Windows access token representing security context for a process or thread.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">Creating Tokens</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">current_process() -&gt; Result&lt;Token&gt;</h4>
+        <p class="text-gray-600 text-sm">Opens the token for the current process.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">for_process(process: HANDLE) -&gt; Result&lt;Token&gt;</h4>
+        <p class="text-gray-600 text-sm">Opens the token for a specific process.</p>
+      </div>
+    </div>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">Token Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_elevated(&amp;self) -&gt; Result&lt;bool&gt;</h4>
+        <p class="text-gray-600 text-sm">Checks if the token is elevated (running as administrator).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">enable_privilege(&amp;self, name: &amp;str) -&gt; Result&lt;bool&gt;</h4>
+        <p class="text-gray-600 text-sm">Enables a privilege. Returns whether it was previously enabled.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">disable_privilege(&amp;self, name: &amp;str) -&gt; Result&lt;bool&gt;</h4>
+        <p class="text-gray-600 text-sm">Disables a privilege.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">has_privilege(&amp;self, name: &amp;str) -&gt; Result&lt;bool&gt;</h4>
+        <p class="text-gray-600 text-sm">Checks if a privilege is enabled.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::security::&#123;Token, privileges&#125;;
+
+<span class="text-purple-400">let</span> token = Token::current_process()?;
+
+<span class="text-purple-400">if</span> token.is_elevated()? &#123;
+    println!(<span class="text-green-400">"Running as administrator"</span>);
+    
+    <span class="text-gray-500">// Enable debug privilege</span>
+    token.enable_privilege(privileges::SE_DEBUG_NAME)?;
+&#125;</code></pre>
+    </div>
+  </section>
+
+  <!-- PrivilegeGuard -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">PrivilegeGuard</h2>
+    <p class="text-gray-700 mb-4">
+      RAII guard that enables a privilege and automatically restores it when dropped.
+    </p>
+
+    <div class="border border-gray-200 rounded-lg p-4">
+      <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">enable(token: &amp;Token, name: &amp;str) -&gt; Result&lt;PrivilegeGuard&gt;</h4>
+      <p class="text-gray-600 text-sm">Enables a privilege and returns a guard that restores it when dropped.</p>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::security::&#123;Token, PrivilegeGuard, privileges&#125;;
+
+<span class="text-purple-400">let</span> token = Token::current_process()?;
+&#123;
+    <span class="text-purple-400">let</span> _guard = PrivilegeGuard::enable(&amp;token, privileges::SE_BACKUP_NAME)?;
+    <span class="text-gray-500">// SE_BACKUP_NAME is enabled here</span>
+&#125; <span class="text-gray-500">// Privilege is automatically restored</span></code></pre>
+    </div>
+  </section>
+
+  <!-- Privileges -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Common Privileges</h2>
+    <p class="text-gray-700 mb-4">
+      The <code>privileges</code> module contains constants for common Windows privileges:
+    </p>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-xs font-mono">SE_DEBUG_NAME</code>
+        <p class="text-gray-600 text-xs mt-1">Debug processes</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-xs font-mono">SE_SHUTDOWN_NAME</code>
+        <p class="text-gray-600 text-xs mt-1">Shut down the system</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-xs font-mono">SE_BACKUP_NAME</code>
+        <p class="text-gray-600 text-xs mt-1">Back up files</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-xs font-mono">SE_RESTORE_NAME</code>
+        <p class="text-gray-600 text-xs mt-1">Restore files</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-xs font-mono">SE_TAKE_OWNERSHIP_NAME</code>
+        <p class="text-gray-600 text-xs mt-1">Take ownership of objects</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-xs font-mono">SE_LOAD_DRIVER_NAME</code>
+        <p class="text-gray-600 text-xs mt-1">Load device drivers</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-xs font-mono">SE_SECURITY_NAME</code>
+        <p class="text-gray-600 text-xs mt-1">Manage security log</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-xs font-mono">SE_SYSTEMTIME_NAME</code>
+        <p class="text-gray-600 text-xs mt-1">Change system time</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-xs font-mono">SE_INC_BASE_PRIORITY_NAME</code>
+        <p class="text-gray-600 text-xs mt-1">Increase process priority</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-3">
+        <code class="text-xs font-mono">SE_CREATE_SYMBOLIC_LINK_NAME</code>
+        <p class="text-gray-600 text-xs mt-1">Create symbolic links</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Helper Functions -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Helper Functions</h2>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_elevated() -&gt; Result&lt;bool&gt;</h4>
+        <p class="text-gray-600 text-sm">Checks if the current process is running as administrator.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">privilege_name(luid: LUID) -&gt; Result&lt;String&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the name of a privilege from its LUID.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::security::is_elevated;
+
+<span class="text-purple-400">if</span> is_elevated()? &#123;
+    println!(<span class="text-green-400">"Running with administrator privileges"</span>);
+&#125; <span class="text-purple-400">else</span> &#123;
+    println!(<span class="text-green-400">"Running as standard user"</span>);
+&#125;</code></pre>
+    </div>
+  </section>
+</div>
+

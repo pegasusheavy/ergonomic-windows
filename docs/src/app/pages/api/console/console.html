@@ -1,0 +1,126 @@
+<div class="prose max-w-none">
+  <div class="flex items-center space-x-3 mb-6">
+    <span class="w-3 h-3 bg-emerald-500 rounded-full"></span>
+    <h1 class="text-4xl font-bold text-gray-900 m-0">Console I/O</h1>
+  </div>
+  <p class="text-xl text-gray-600 mb-8">
+    Safe wrappers for Windows console operations including reading, writing, colors, and cursor control.
+  </p>
+
+  <div class="bg-gray-100 rounded-lg p-4 mb-8">
+    <code class="text-sm">use ergonomic_windows::console::*;</code>
+  </div>
+
+  <!-- Console -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Console</h2>
+    <p class="text-gray-700 mb-4">
+      Represents the Windows console for the current process. Provides methods for reading, writing,
+      and manipulating console properties.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">current() -&gt; Result&lt;Console&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the console for the current process.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">alloc() -&gt; Result&lt;Console&gt;</h4>
+        <p class="text-gray-600 text-sm">Allocates a new console for the current process.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">write(&amp;self, text: &amp;str) -&gt; Result&lt;usize&gt;</h4>
+        <p class="text-gray-600 text-sm">Writes a string to the console. Returns bytes written.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">write_line(&amp;self, text: &amp;str) -&gt; Result&lt;usize&gt;</h4>
+        <p class="text-gray-600 text-sm">Writes a string followed by a newline.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">read_line(&amp;self) -&gt; Result&lt;String&gt;</h4>
+        <p class="text-gray-600 text-sm">Reads a line from the console (blocking).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">clear(&amp;self) -&gt; Result&lt;()&gt;</h4>
+        <p class="text-gray-600 text-sm">Clears the console screen.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Colors -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Colors &amp; Attributes</h2>
+    <p class="text-gray-700 mb-4">Control console text colors and attributes.</p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">Color Enum</h3>
+    <div class="grid grid-cols-4 gap-2 mb-6">
+      <div class="p-2 bg-black text-white text-xs text-center rounded">Black</div>
+      <div class="p-2 bg-blue-900 text-white text-xs text-center rounded">DarkBlue</div>
+      <div class="p-2 bg-green-900 text-white text-xs text-center rounded">DarkGreen</div>
+      <div class="p-2 bg-cyan-900 text-white text-xs text-center rounded">DarkCyan</div>
+      <div class="p-2 bg-red-900 text-white text-xs text-center rounded">DarkRed</div>
+      <div class="p-2 bg-purple-900 text-white text-xs text-center rounded">DarkMagenta</div>
+      <div class="p-2 bg-yellow-700 text-white text-xs text-center rounded">DarkYellow</div>
+      <div class="p-2 bg-gray-400 text-black text-xs text-center rounded">Gray</div>
+      <div class="p-2 bg-gray-600 text-white text-xs text-center rounded">DarkGray</div>
+      <div class="p-2 bg-blue-500 text-white text-xs text-center rounded">Blue</div>
+      <div class="p-2 bg-green-500 text-white text-xs text-center rounded">Green</div>
+      <div class="p-2 bg-cyan-500 text-black text-xs text-center rounded">Cyan</div>
+      <div class="p-2 bg-red-500 text-white text-xs text-center rounded">Red</div>
+      <div class="p-2 bg-purple-500 text-white text-xs text-center rounded">Magenta</div>
+      <div class="p-2 bg-yellow-400 text-black text-xs text-center rounded">Yellow</div>
+      <div class="p-2 bg-white text-black text-xs text-center rounded border">White</div>
+    </div>
+
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">set_foreground(&amp;self, color: Color)</h4>
+        <p class="text-gray-600 text-sm">Sets the text foreground color.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">set_background(&amp;self, color: Color)</h4>
+        <p class="text-gray-600 text-sm">Sets the text background color.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">set_text_attribute(&amp;self, attr: TextAttribute)</h4>
+        <p class="text-gray-600 text-sm">Sets both foreground and background at once.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cursor -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Cursor Control</h2>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">cursor_position(&amp;self) -&gt; Result&lt;(i16, i16)&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the current cursor position (x, y).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">set_cursor_position(&amp;self, x: i16, y: i16)</h4>
+        <p class="text-gray-600 text-sm">Sets the cursor position.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">set_cursor_visible(&amp;self, visible: bool)</h4>
+        <p class="text-gray-600 text-sm">Shows or hides the cursor.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Virtual Terminal -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Virtual Terminal (ANSI)</h2>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">enable_virtual_terminal(&amp;self)</h4>
+        <p class="text-gray-600 text-sm">Enables ANSI escape code processing for modern terminal features.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">enable_raw_input(&amp;self)</h4>
+        <p class="text-gray-600 text-sm">Enables raw input mode (no line buffering or echo).</p>
+      </div>
+    </div>
+  </section>
+</div>
+

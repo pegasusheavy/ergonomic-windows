@@ -188,7 +188,7 @@ pub mod prelude {
     pub use crate::window::{
         ExStyle, Message, MessageHandler, ShowCommand, Style, Window, WindowBuilder,
     };
-    
+
     // New modules in prelude
     pub use crate::console::{Console, Color, TextAttribute};
     pub use crate::env::{get as env_get, set as env_set, expand as env_expand};

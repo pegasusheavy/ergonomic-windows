@@ -1,0 +1,117 @@
+<div class="prose max-w-none">
+  <div class="flex items-center space-x-3 mb-6">
+    <span class="w-3 h-3 bg-rose-500 rounded-full"></span>
+    <h1 class="text-4xl font-bold text-gray-900 m-0">Dynamic Libraries (DLLs)</h1>
+  </div>
+  <p class="text-xl text-gray-600 mb-8">
+    Safe wrappers for loading and using Windows dynamic-link libraries.
+  </p>
+
+  <div class="bg-gray-100 rounded-lg p-4 mb-8">
+    <code class="text-sm">use ergonomic_windows::module::*;</code>
+  </div>
+
+  <!-- Library -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Library</h2>
+    <p class="text-gray-700 mb-4">
+      A loaded dynamic library with RAII cleanup. The library is automatically freed when dropped.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">Loading Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">load(path: impl AsRef&lt;Path&gt;) -&gt; Result&lt;Library&gt;</h4>
+        <p class="text-gray-600 text-sm">Loads a library from the specified path.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">load_with_flags(path, flags: LoadFlags) -&gt; Result&lt;Library&gt;</h4>
+        <p class="text-gray-600 text-sm">Loads with specific flags (e.g., as data file).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">get(name: &amp;str) -&gt; Result&lt;Library&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets a handle to an already-loaded library.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">current() -&gt; Result&lt;Library&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets a handle to the current executable.</p>
+      </div>
+    </div>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-6 mb-4">Other Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4 bg-red-50">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">unsafe get_proc&lt;F&gt;(&amp;self, name: &amp;str) -&gt; Result&lt;F&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets a function pointer from the library. <strong>Unsafe:</strong> caller must ensure the function signature matches.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">path(&amp;self) -&gt; Result&lt;PathBuf&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the path to the loaded library.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">as_raw(&amp;self) -&gt; HMODULE</h4>
+        <p class="text-gray-600 text-sm">Returns the raw module handle.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::module::Library;
+
+<span class="text-gray-500">// Get kernel32.dll (always loaded)</span>
+<span class="text-purple-400">let</span> kernel32 = Library::get(<span class="text-green-400">"kernel32.dll"</span>)?;
+
+<span class="text-gray-500">// Get a function pointer</span>
+<span class="text-purple-400">type</span> GetCurrentProcessIdFn = <span class="text-purple-400">unsafe extern "system" fn</span>() -> u32;
+<span class="text-purple-400">let</span> get_pid: GetCurrentProcessIdFn = <span class="text-purple-400">unsafe</span> &#123;
+    kernel32.get_proc(<span class="text-green-400">"GetCurrentProcessId"</span>)?
+&#125;;
+
+<span class="text-purple-400">let</span> pid = <span class="text-purple-400">unsafe</span> &#123; get_pid() &#125;;</code></pre>
+    </div>
+  </section>
+
+  <!-- LoadFlags -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">LoadFlags</h2>
+    <p class="text-gray-700 mb-4">Flags for controlling library loading behavior:</p>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">NONE</h4>
+        <p class="text-gray-600 text-sm">No special flags (default).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">AS_DATAFILE</h4>
+        <p class="text-gray-600 text-sm">Load as data file (no code execution).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">AS_IMAGE_RESOURCE</h4>
+        <p class="text-gray-600 text-sm">Load as image resource.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">SEARCH_DLL_LOAD_DIR</h4>
+        <p class="text-gray-600 text-sm">Search the DLL's directory for dependencies.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">SEARCH_SYSTEM32</h4>
+        <p class="text-gray-600 text-sm">Search only System32 for dependencies.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Helper Functions -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Helper Functions</h2>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">current_exe() -&gt; Result&lt;PathBuf&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the path to the current executable.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">current_exe_dir() -&gt; Result&lt;PathBuf&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the directory containing the current executable.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
