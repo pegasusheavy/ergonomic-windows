@@ -4,14 +4,16 @@
 
 use crate::error::{Error, Result};
 use crate::string::{from_wide, to_wide, WideString};
-use windows::Win32::Foundation::{ERROR_MORE_DATA, ERROR_NO_MORE_ITEMS, ERROR_SUCCESS, WIN32_ERROR};
+use windows::Win32::Foundation::{
+    ERROR_MORE_DATA, ERROR_NO_MORE_ITEMS, ERROR_SUCCESS, WIN32_ERROR,
+};
 use windows::Win32::System::Registry::{
     RegCloseKey, RegCreateKeyExW, RegDeleteKeyW, RegDeleteValueW, RegEnumKeyExW, RegEnumValueW,
     RegOpenKeyExW, RegQueryValueExW, RegSetValueExW, HKEY, HKEY_CLASSES_ROOT, HKEY_CURRENT_CONFIG,
     HKEY_CURRENT_USER, HKEY_LOCAL_MACHINE, HKEY_USERS, KEY_ALL_ACCESS, KEY_CREATE_SUB_KEY,
-    KEY_ENUMERATE_SUB_KEYS, KEY_QUERY_VALUE, KEY_READ, KEY_SET_VALUE, KEY_WRITE, KEY_WOW64_32KEY,
-    KEY_WOW64_64KEY, REG_BINARY, REG_DWORD, REG_EXPAND_SZ, REG_MULTI_SZ, REG_OPTION_NON_VOLATILE,
-    REG_QWORD, REG_SAM_FLAGS, REG_SZ, REG_VALUE_TYPE,
+    KEY_ENUMERATE_SUB_KEYS, KEY_QUERY_VALUE, KEY_READ, KEY_SET_VALUE, KEY_WOW64_32KEY,
+    KEY_WOW64_64KEY, KEY_WRITE, REG_BINARY, REG_DWORD, REG_EXPAND_SZ, REG_MULTI_SZ,
+    REG_OPTION_NON_VOLATILE, REG_QWORD, REG_SAM_FLAGS, REG_SZ, REG_VALUE_TYPE,
 };
 
 /// Helper to convert WIN32_ERROR to Result
@@ -398,15 +400,8 @@ impl Key {
             Value::Binary(data) => (REG_BINARY, data.clone()),
         };
 
-        let err = unsafe {
-            RegSetValueExW(
-                self.hkey,
-                name_wide.as_pcwstr(),
-                0,
-                value_type,
-                Some(&data),
-            )
-        };
+        let err =
+            unsafe { RegSetValueExW(self.hkey, name_wide.as_pcwstr(), 0, value_type, Some(&data)) };
         check_error(err)
     }
 
@@ -888,11 +883,11 @@ mod tests {
     #[test]
     fn test_access_flags_combination() {
         let combined = Access::READ.with(Access::WRITE);
-        assert!((combined.0.0 & KEY_READ.0) != 0);
-        assert!((combined.0.0 & KEY_WRITE.0) != 0);
+        assert!((combined.0 .0 & KEY_READ.0) != 0);
+        assert!((combined.0 .0 & KEY_WRITE.0) != 0);
 
         let with_32bit = Access::READ.with(Access::WOW64_32);
-        assert!((with_32bit.0.0 & KEY_WOW64_32KEY.0) != 0);
+        assert!((with_32bit.0 .0 & KEY_WOW64_32KEY.0) != 0);
     }
 
     #[test]

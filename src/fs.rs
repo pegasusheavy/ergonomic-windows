@@ -7,14 +7,13 @@ use crate::handle::OwnedHandle;
 use crate::string::{from_wide, WideString};
 use std::path::{Path, PathBuf};
 use windows::Win32::Storage::FileSystem::{
-    CreateFileW, DeleteFileW, GetFileAttributesW, MoveFileExW, SetFileAttributesW,
-    FILE_ACCESS_RIGHTS, FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_DIRECTORY, FILE_ATTRIBUTE_HIDDEN,
-    FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY, FILE_ATTRIBUTE_SYSTEM,
+    CreateFileW, DeleteFileW, GetFileAttributesW, MoveFileExW, SetFileAttributesW, CREATE_ALWAYS,
+    CREATE_NEW, FILE_ACCESS_RIGHTS, FILE_ATTRIBUTE_ARCHIVE, FILE_ATTRIBUTE_DIRECTORY,
+    FILE_ATTRIBUTE_HIDDEN, FILE_ATTRIBUTE_NORMAL, FILE_ATTRIBUTE_READONLY, FILE_ATTRIBUTE_SYSTEM,
     FILE_ATTRIBUTE_TEMPORARY, FILE_CREATION_DISPOSITION, FILE_FLAGS_AND_ATTRIBUTES,
     FILE_GENERIC_READ, FILE_GENERIC_WRITE, FILE_SHARE_MODE, FILE_SHARE_READ, FILE_SHARE_WRITE,
     INVALID_FILE_ATTRIBUTES, MOVEFILE_COPY_ALLOWED, MOVEFILE_REPLACE_EXISTING,
-    MOVEFILE_WRITE_THROUGH, MOVE_FILE_FLAGS, OPEN_ALWAYS, OPEN_EXISTING, CREATE_ALWAYS,
-    CREATE_NEW,
+    MOVEFILE_WRITE_THROUGH, MOVE_FILE_FLAGS, OPEN_ALWAYS, OPEN_EXISTING,
 };
 
 /// File attributes for Windows files.
@@ -108,7 +107,9 @@ pub fn exists(path: impl AsRef<Path>) -> bool {
 
 /// Checks if a path is a directory.
 pub fn is_dir(path: impl AsRef<Path>) -> bool {
-    get_attributes(path).map(|a| a.is_directory()).unwrap_or(false)
+    get_attributes(path)
+        .map(|a| a.is_directory())
+        .unwrap_or(false)
 }
 
 /// Checks if a path is a file (not a directory).
@@ -202,7 +203,11 @@ pub fn move_file_with_options(
 
     // SAFETY: Both paths are valid null-terminated wide strings.
     unsafe {
-        MoveFileExW(from_wide.as_pcwstr(), to_wide.as_pcwstr(), options.to_flags())?;
+        MoveFileExW(
+            from_wide.as_pcwstr(),
+            to_wide.as_pcwstr(),
+            options.to_flags(),
+        )?;
     }
     Ok(())
 }
@@ -359,8 +364,8 @@ pub fn get_system_directory() -> Result<PathBuf> {
     use windows::Win32::System::SystemInformation::GetSystemDirectoryW;
 
     let mut buffer = vec![0u16; 260]; // MAX_PATH
-    // SAFETY: buffer is a valid mutable slice with sufficient capacity.
-    // GetSystemDirectoryW writes at most buffer.len() characters.
+                                      // SAFETY: buffer is a valid mutable slice with sufficient capacity.
+                                      // GetSystemDirectoryW writes at most buffer.len() characters.
     let len = unsafe { GetSystemDirectoryW(Some(&mut buffer)) } as usize;
 
     if len == 0 {
@@ -377,7 +382,7 @@ pub fn get_windows_directory() -> Result<PathBuf> {
     use windows::Win32::System::SystemInformation::GetWindowsDirectoryW;
 
     let mut buffer = vec![0u16; 260]; // MAX_PATH
-    // SAFETY: buffer is a valid mutable slice with sufficient capacity.
+                                      // SAFETY: buffer is a valid mutable slice with sufficient capacity.
     let len = unsafe { GetWindowsDirectoryW(Some(&mut buffer)) } as usize;
 
     if len == 0 {
@@ -394,7 +399,7 @@ pub fn get_temp_directory() -> Result<PathBuf> {
     use windows::Win32::Storage::FileSystem::GetTempPathW;
 
     let mut buffer = vec![0u16; 260]; // MAX_PATH
-    // SAFETY: buffer is a valid mutable slice with sufficient capacity.
+                                      // SAFETY: buffer is a valid mutable slice with sufficient capacity.
     let len = unsafe { GetTempPathW(Some(&mut buffer)) } as usize;
 
     if len == 0 {

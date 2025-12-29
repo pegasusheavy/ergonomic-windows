@@ -12,9 +12,9 @@ use windows::Win32::UI::WindowsAndMessaging::{
     CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, GetMessageW,
     GetWindowLongPtrW, LoadCursorW, PostQuitMessage, RegisterClassExW, SetWindowLongPtrW,
     ShowWindow, TranslateMessage, UnregisterClassW, CS_HREDRAW, CS_VREDRAW, CW_USEDEFAULT,
-    GWLP_USERDATA, IDC_ARROW, MSG, SW_HIDE, SW_SHOW, SW_SHOWDEFAULT, WM_CLOSE, WM_CREATE,
-    WM_DESTROY, WM_NCCREATE, WINDOW_EX_STYLE, WINDOW_STYLE, WNDCLASSEXW, WS_CAPTION,
-    WS_OVERLAPPEDWINDOW, WS_SYSMENU, WS_VISIBLE,
+    GWLP_USERDATA, IDC_ARROW, MSG, SW_HIDE, SW_SHOW, SW_SHOWDEFAULT, WINDOW_EX_STYLE, WINDOW_STYLE,
+    WM_CLOSE, WM_CREATE, WM_DESTROY, WM_NCCREATE, WNDCLASSEXW, WS_CAPTION, WS_OVERLAPPEDWINDOW,
+    WS_SYSMENU, WS_VISIBLE,
 };
 
 /// Window styles for creating windows.

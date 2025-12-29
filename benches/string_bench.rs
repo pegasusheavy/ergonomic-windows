@@ -106,9 +106,7 @@ fn bench_unicode_strings(c: &mut Criterion) {
 
     // ASCII only
     let ascii = "Hello, World! This is a test string.";
-    group.bench_function("ascii_to_wide", |b| {
-        b.iter(|| to_wide(black_box(ascii)))
-    });
+    group.bench_function("ascii_to_wide", |b| b.iter(|| to_wide(black_box(ascii))));
 
     // Mixed Unicode with emojis
     let unicode = "Hello, World! \u{1F600}\u{1F601}\u{1F602} \u{4E2D}\u{6587}";
@@ -118,9 +116,7 @@ fn bench_unicode_strings(c: &mut Criterion) {
 
     // CJK characters (2 UTF-16 code units each for some)
     let cjk = "\u{4E2D}\u{6587}\u{65E5}\u{672C}\u{8A9E}".repeat(100);
-    group.bench_function("cjk_to_wide", |b| {
-        b.iter(|| to_wide(black_box(&cjk)))
-    });
+    group.bench_function("cjk_to_wide", |b| b.iter(|| to_wide(black_box(&cjk))));
 
     group.finish();
 }

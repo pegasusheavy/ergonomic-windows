@@ -114,7 +114,10 @@ fn profile_repeated_allocations() {
         results.push(to_wide(&format!("Second batch {}", i)));
     }
 
-    println!("Completed fragmentation test with {} retained strings", results.len());
+    println!(
+        "Completed fragmentation test with {} retained strings",
+        results.len()
+    );
 }
 
 fn profile_large_strings() {

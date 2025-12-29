@@ -52,8 +52,12 @@ unsafe impl GlobalAlloc for TrackingAllocator {
         let ptr = System.alloc(layout);
         if !ptr.is_null() {
             self.allocation_count.fetch_add(1, Ordering::SeqCst);
-            self.bytes_allocated.fetch_add(layout.size(), Ordering::SeqCst);
-            let current = self.current_memory.fetch_add(layout.size(), Ordering::SeqCst) + layout.size();
+            self.bytes_allocated
+                .fetch_add(layout.size(), Ordering::SeqCst);
+            let current = self
+                .current_memory
+                .fetch_add(layout.size(), Ordering::SeqCst)
+                + layout.size();
 
             // Update peak memory
             let mut peak = self.peak_memory.load(Ordering::SeqCst);
@@ -74,8 +78,10 @@ unsafe impl GlobalAlloc for TrackingAllocator {
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
         self.deallocation_count.fetch_add(1, Ordering::SeqCst);
-        self.bytes_deallocated.fetch_add(layout.size(), Ordering::SeqCst);
-        self.current_memory.fetch_sub(layout.size(), Ordering::SeqCst);
+        self.bytes_deallocated
+            .fetch_add(layout.size(), Ordering::SeqCst);
+        self.current_memory
+            .fetch_sub(layout.size(), Ordering::SeqCst);
         System.dealloc(ptr, layout)
     }
 }
@@ -120,8 +126,10 @@ fn bench_allocation_counts(c: &mut Criterion) {
 
             // Print allocation info on first run
             if iters == 1 {
-                eprintln!("\nto_wide small: {} allocs, {} bytes per call",
-                    stats.allocations, stats.bytes_allocated);
+                eprintln!(
+                    "\nto_wide small: {} allocs, {} bytes per call",
+                    stats.allocations, stats.bytes_allocated
+                );
             }
             elapsed
         });
@@ -140,8 +148,10 @@ fn bench_allocation_counts(c: &mut Criterion) {
             let stats = ALLOCATOR.stats();
 
             if iters == 1 {
-                eprintln!("\nfrom_wide small: {} allocs, {} bytes per call",
-                    stats.allocations, stats.bytes_allocated);
+                eprintln!(
+                    "\nfrom_wide small: {} allocs, {} bytes per call",
+                    stats.allocations, stats.bytes_allocated
+                );
             }
             elapsed
         });
@@ -159,8 +169,10 @@ fn bench_allocation_counts(c: &mut Criterion) {
             let stats = ALLOCATOR.stats();
 
             if iters == 1 {
-                eprintln!("\nWideString: {} allocs, {} bytes per call",
-                    stats.allocations, stats.bytes_allocated);
+                eprintln!(
+                    "\nWideString: {} allocs, {} bytes per call",
+                    stats.allocations, stats.bytes_allocated
+                );
             }
             elapsed
         });
@@ -181,8 +193,12 @@ fn bench_allocation_counts(c: &mut Criterion) {
             let stats = ALLOCATOR.stats();
 
             if iters == 1 {
-                eprintln!("\nWideStringBuilder: {} allocs, {} bytes per call, {} leaked",
-                    stats.allocations, stats.bytes_allocated, stats.leaked_bytes());
+                eprintln!(
+                    "\nWideStringBuilder: {} allocs, {} bytes per call, {} leaked",
+                    stats.allocations,
+                    stats.bytes_allocated,
+                    stats.leaked_bytes()
+                );
             }
             elapsed
         });
@@ -207,8 +223,11 @@ fn bench_memory_leaks(c: &mut Criterion) {
             let stats = ALLOCATOR.stats();
 
             if stats.leaked_bytes() > 0 && iters > 0 {
-                eprintln!("\nWARNING: Potential leak detected! {} bytes leaked after {} iterations",
-                    stats.leaked_bytes(), iters);
+                eprintln!(
+                    "\nWARNING: Potential leak detected! {} bytes leaked after {} iterations",
+                    stats.leaked_bytes(),
+                    iters
+                );
             }
             elapsed
         });
@@ -231,8 +250,12 @@ fn bench_memory_leaks(c: &mut Criterion) {
             let stats = ALLOCATOR.stats();
 
             if iters == 1 {
-                eprintln!("\nBuilder reuse: {} allocs, {} peak bytes, {} leaked",
-                    stats.allocations, stats.peak_memory, stats.leaked_bytes());
+                eprintln!(
+                    "\nBuilder reuse: {} allocs, {} peak bytes, {} leaked",
+                    stats.allocations,
+                    stats.peak_memory,
+                    stats.leaked_bytes()
+                );
             }
             elapsed
         });
@@ -259,9 +282,13 @@ fn bench_large_allocations(c: &mut Criterion) {
                 let stats = ALLOCATOR.stats();
 
                 if iters == 1 {
-                    eprintln!("\nto_wide {} chars: {} allocs, {} bytes, {} bytes/char",
-                        size, stats.allocations, stats.bytes_allocated,
-                        stats.bytes_allocated / *size);
+                    eprintln!(
+                        "\nto_wide {} chars: {} allocs, {} bytes, {} bytes/char",
+                        size,
+                        stats.allocations,
+                        stats.bytes_allocated,
+                        stats.bytes_allocated / *size
+                    );
                 }
                 elapsed
             });

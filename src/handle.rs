@@ -4,7 +4,9 @@
 //! close the handle when dropped.
 
 use crate::error::{Error, Result};
-use windows::Win32::Foundation::{CloseHandle, DuplicateHandle, DUPLICATE_SAME_ACCESS, HANDLE, INVALID_HANDLE_VALUE};
+use windows::Win32::Foundation::{
+    CloseHandle, DuplicateHandle, DUPLICATE_SAME_ACCESS, HANDLE, INVALID_HANDLE_VALUE,
+};
 
 /// A safe wrapper around a Windows `HANDLE` that automatically closes when dropped.
 ///
@@ -31,7 +33,9 @@ impl OwnedHandle {
     #[inline]
     pub fn new(handle: HANDLE) -> Result<Self> {
         if handle.is_invalid() || handle.0.is_null() {
-            return Err(Error::invalid_handle("Cannot create OwnedHandle from invalid handle"));
+            return Err(Error::invalid_handle(
+                "Cannot create OwnedHandle from invalid handle",
+            ));
         }
         Ok(Self { handle })
     }
@@ -41,7 +45,9 @@ impl OwnedHandle {
     /// This is useful for handles that may legitimately be null.
     pub fn new_allow_null(handle: HANDLE) -> Result<Self> {
         if handle == INVALID_HANDLE_VALUE {
-            return Err(Error::invalid_handle("Cannot create OwnedHandle from INVALID_HANDLE_VALUE"));
+            return Err(Error::invalid_handle(
+                "Cannot create OwnedHandle from INVALID_HANDLE_VALUE",
+            ));
         }
         Ok(Self { handle })
     }
@@ -435,9 +441,24 @@ mod tests {
         let temp_path2 = env::temp_dir().join("handle_order_2.tmp");
         let temp_path3 = env::temp_dir().join("handle_order_3.tmp");
 
-        let h1 = OpenOptions::new().read(true).write(true).create(true).open(&temp_path1).ok();
-        let h2 = OpenOptions::new().read(true).write(true).create(true).open(&temp_path2).ok();
-        let h3 = OpenOptions::new().read(true).write(true).create(true).open(&temp_path3).ok();
+        let h1 = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .open(&temp_path1)
+            .ok();
+        let h2 = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .open(&temp_path2)
+            .ok();
+        let h3 = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .open(&temp_path3)
+            .ok();
 
         // Drop in reverse order
         drop(h3);

@@ -825,15 +825,15 @@ mod tests {
         // Test various Unicode scripts
         let texts = [
             "ASCII only",
-            "日本語テスト",          // Japanese
-            "한국어 테스트",         // Korean
-            "中文测试",              // Chinese
-            "Тест на русском",       // Russian Cyrillic
-            "Ελληνικά",              // Greek
-            "עברית",                 // Hebrew
-            "العربية",               // Arabic
-            "हिन्दी",                // Hindi
-            "ไทย",                   // Thai
+            "日本語テスト",    // Japanese
+            "한국어 테스트",   // Korean
+            "中文测试",        // Chinese
+            "Тест на русском", // Russian Cyrillic
+            "Ελληνικά",        // Greek
+            "עברית",           // Hebrew
+            "العربية",         // Arabic
+            "हिन्दी",           // Hindi
+            "ไทย",             // Thai
         ];
 
         for text in texts {

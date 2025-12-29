@@ -147,9 +147,10 @@ impl ProcessAccess {
     pub const TERMINATE: Self = Self(PROCESS_TERMINATE);
 
     /// Access to query information and terminate.
-    pub const QUERY_AND_TERMINATE: Self = Self(windows::Win32::System::Threading::PROCESS_ACCESS_RIGHTS(
-        PROCESS_QUERY_INFORMATION.0 | PROCESS_TERMINATE.0,
-    ));
+    pub const QUERY_AND_TERMINATE: Self =
+        Self(windows::Win32::System::Threading::PROCESS_ACCESS_RIGHTS(
+            PROCESS_QUERY_INFORMATION.0 | PROCESS_TERMINATE.0,
+        ));
 }
 
 /// Builder for creating new processes.
@@ -300,8 +301,8 @@ impl Command {
         // Pre-calculate total length to minimize allocations.
         // Each arg needs at most: original length + 2 (quotes) + 1 (space separator)
         // Plus extra for potential backslash escaping (worst case: double the length)
-        let total_len = self.program.len() + 3
-            + self.args.iter().map(|a| a.len() * 2 + 3).sum::<usize>();
+        let total_len =
+            self.program.len() + 3 + self.args.iter().map(|a| a.len() * 2 + 3).sum::<usize>();
 
         let mut cmd = String::with_capacity(total_len);
         cmd.push_str(&quote_arg(&self.program));
@@ -333,8 +334,7 @@ impl Command {
 #[inline]
 fn quote_arg(arg: &str) -> Cow<'_, str> {
     // Check if quoting is needed
-    let needs_quoting = arg.is_empty()
-        || arg.bytes().any(|b| b == b' ' || b == b'\t' || b == b'"');
+    let needs_quoting = arg.is_empty() || arg.bytes().any(|b| b == b' ' || b == b'\t' || b == b'"');
 
     if needs_quoting {
         let mut quoted = String::with_capacity(arg.len() + 2);
