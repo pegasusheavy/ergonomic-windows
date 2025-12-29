@@ -1,0 +1,258 @@
+<article class="prose prose-slate max-w-none">
+  <h1 class="text-4xl font-bold text-gray-900 mb-4">Direct2D &amp; DirectWrite</h1>
+  <p class="text-xl text-gray-600 mb-8">
+    Hardware-accelerated 2D graphics rendering and high-quality text rendering.
+  </p>
+
+  <!-- Overview -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Overview</h2>
+    <p class="text-gray-600 mb-4">
+      The <code class="bg-gray-100 px-2 py-1 rounded">d2d</code> module provides safe wrappers for Direct2D and DirectWrite, 
+      enabling high-performance 2D graphics rendering with GPU acceleration.
+    </p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-100">
+        <h4 class="font-semibold text-blue-800 mb-2">Direct2D</h4>
+        <p class="text-sm text-gray-600">Hardware-accelerated 2D graphics: shapes, lines, images</p>
+      </div>
+      <div class="bg-gradient-to-br from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-100">
+        <h4 class="font-semibold text-purple-800 mb-2">DirectWrite</h4>
+        <p class="text-sm text-gray-600">High-quality text rendering with ClearType</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Start -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Quick Start</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::d2d::*;
+
+// Create factories
+let d2d_factory = D2DFactory::new()?;
+let dwrite_factory = DWriteFactory::new()?;
+
+// Create a render target for a window
+let render_target = d2d_factory.create_hwnd_render_target(hwnd)?;
+
+// Create resources
+let brush = render_target.create_solid_brush(Color::BLUE)?;
+let text_format = dwrite_factory.create_text_format("Segoe UI", 24.0)?;
+
+// Drawing loop
+render_target.begin_draw();
+render_target.clear(Color::WHITE);
+
+// Draw shapes
+render_target.fill_rect(10.0, 10.0, 100.0, 50.0, &brush);
+render_target.draw_ellipse(200.0, 100.0, 50.0, 50.0, &brush, 2.0);
+
+// Draw text
+render_target.draw_text("Hello, Direct2D!", &text_format, 10.0, 200.0, 300.0, 50.0, &brush);
+
+render_target.end_draw()?;</code></pre>
+  </section>
+
+  <!-- Colors -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Colors</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::d2d::Color;
+
+// From RGB floats (0.0 - 1.0)
+let red = Color::rgb(1.0, 0.0, 0.0);
+let semi_transparent = Color::rgba(0.0, 0.0, 1.0, 0.5);
+
+// From 8-bit values (0-255)
+let coral = Color::from_rgb8(255, 127, 80);
+
+// From hex
+let purple = Color::from_hex(0x800080);
+
+// Predefined constants
+let black = Color::BLACK;
+let white = Color::WHITE;
+let red = Color::RED;
+let green = Color::GREEN;
+let blue = Color::BLUE;
+let yellow = Color::YELLOW;
+let cyan = Color::CYAN;
+let magenta = Color::MAGENTA;
+let gray = Color::GRAY;
+let transparent = Color::TRANSPARENT;</code></pre>
+  </section>
+
+  <!-- Drawing Shapes -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Drawing Shapes</h2>
+    
+    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Lines</h3>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">// Draw a line from (x1, y1) to (x2, y2)
+render_target.draw_line(
+    10.0, 10.0,   // start point
+    200.0, 100.0, // end point
+    &brush,
+    2.0           // stroke width
+);</code></pre>
+
+    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Rectangles</h3>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">// Draw rectangle outline
+render_target.draw_rect(
+    10.0, 10.0,   // x, y
+    100.0, 50.0,  // width, height
+    &brush,
+    2.0           // stroke width
+);
+
+// Fill rectangle
+render_target.fill_rect(
+    10.0, 10.0,
+    100.0, 50.0,
+    &brush
+);</code></pre>
+
+    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Rounded Rectangles</h3>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">// Draw rounded rectangle outline
+render_target.draw_rounded_rect(
+    10.0, 10.0,   // x, y
+    100.0, 50.0,  // width, height
+    8.0, 8.0,     // radius x, radius y
+    &brush,
+    2.0           // stroke width
+);
+
+// Fill rounded rectangle
+render_target.fill_rounded_rect(
+    10.0, 10.0,
+    100.0, 50.0,
+    8.0, 8.0,
+    &brush
+);</code></pre>
+
+    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Ellipses &amp; Circles</h3>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">// Draw ellipse outline
+render_target.draw_ellipse(
+    100.0, 100.0, // center x, y
+    50.0, 30.0,   // radius x, radius y
+    &brush,
+    2.0           // stroke width
+);
+
+// Fill ellipse
+render_target.fill_ellipse(
+    100.0, 100.0,
+    50.0, 30.0,
+    &brush
+);
+
+// Circle (equal radii)
+render_target.fill_ellipse(100.0, 100.0, 40.0, 40.0, &brush);</code></pre>
+  </section>
+
+  <!-- Brushes -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Brushes</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">// Create a solid color brush
+let brush = render_target.create_solid_brush(Color::RED)?;
+
+// Change color
+brush.set_color(Color::BLUE);
+let current_color = brush.color();
+
+// Adjust opacity
+brush.set_opacity(0.5);</code></pre>
+  </section>
+
+  <!-- Text Rendering -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Text Rendering (DirectWrite)</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::d2d::&#123;DWriteFactory, TextFormat, TextAlignment, ParagraphAlignment&#125;;
+
+// Create DirectWrite factory
+let dwrite = DWriteFactory::new()?;
+
+// Create a text format
+let format = dwrite.create_text_format("Segoe UI", 16.0)?;
+
+// Configure alignment
+format.set_text_alignment(TextAlignment::Center)?;
+format.set_paragraph_alignment(ParagraphAlignment::Center)?;
+
+// Draw text
+render_target.draw_text(
+    "Hello, World!",
+    &format,
+    10.0, 10.0,    // x, y
+    300.0, 100.0,  // layout width, height
+    &brush
+);</code></pre>
+
+    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Text Alignment Options</h3>
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-200 rounded-lg">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Horizontal</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Vertical</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <tr><td class="px-4 py-3"><code>Left</code></td><td class="px-4 py-3"><code>Top</code></td></tr>
+          <tr><td class="px-4 py-3"><code>Center</code></td><td class="px-4 py-3"><code>Center</code></td></tr>
+          <tr><td class="px-4 py-3"><code>Right</code></td><td class="px-4 py-3"><code>Bottom</code></td></tr>
+          <tr><td class="px-4 py-3"><code>Justified</code></td><td class="px-4 py-3">-</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Render Target -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Render Target Operations</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">// Get render target size
+let (width, height) = render_target.size();
+
+// Resize when window resizes
+render_target.resize(new_width, new_height)?;
+
+// Clear with a color
+render_target.clear(Color::from_hex(0xF0F0F0));
+
+// Drawing frame
+render_target.begin_draw();
+// ... draw operations ...
+render_target.end_draw()?;</code></pre>
+  </section>
+
+  <!-- Example: Custom Button -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Example: Custom Button</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">fn draw_custom_button(
+    rt: &RenderTarget,
+    text_format: &TextFormat,
+    x: f32, y: f32,
+    width: f32, height: f32,
+    text: &str,
+    hovered: bool,
+) -> Result&lt;()&gt; &#123;
+    let bg_color = if hovered &#123;
+        Color::from_hex(0x0078D4)  // Blue hover
+    &#125; else &#123;
+        Color::from_hex(0x005A9E)  // Dark blue
+    &#125;;
+    
+    let bg_brush = rt.create_solid_brush(bg_color)?;
+    let text_brush = rt.create_solid_brush(Color::WHITE)?;
+    
+    // Draw rounded background
+    rt.fill_rounded_rect(x, y, width, height, 4.0, 4.0, &bg_brush);
+    
+    // Draw text centered
+    text_format.set_text_alignment(TextAlignment::Center)?;
+    text_format.set_paragraph_alignment(ParagraphAlignment::Center)?;
+    rt.draw_text(text, text_format, x, y, width, height, &text_brush);
+    
+    Ok(())
+&#125;</code></pre>
+  </section>
+</article>
+

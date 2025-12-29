@@ -1,0 +1,257 @@
+<article class="prose prose-slate max-w-none">
+  <h1 class="text-4xl font-bold text-gray-900 mb-4">WinRT XAML</h1>
+  <p class="text-xl text-gray-600 mb-8">
+    Modern Windows UI types and XAML Islands support for declarative, adaptive UI.
+  </p>
+
+  <!-- Overview -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Overview</h2>
+    <p class="text-gray-600 mb-4">
+      The <code class="bg-gray-100 px-2 py-1 rounded">xaml</code> module provides types and utilities for working with 
+      WinRT XAML, the modern UI framework used in UWP and WinUI applications.
+    </p>
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+      <p class="text-blue-800">
+        <strong>Note:</strong> Full WinRT XAML support requires a UWP/WinUI app context. For Win32 apps, 
+        you can use <strong>XAML Islands</strong> (Windows 10 1903+) to host XAML controls.
+      </p>
+    </div>
+  </section>
+
+  <!-- UI Alternatives -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">UI Framework Comparison</h2>
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-200 rounded-lg">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Framework</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Best For</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Module</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <tr>
+            <td class="px-4 py-3"><strong>Win32 Controls</strong></td>
+            <td class="px-4 py-3">Traditional desktop apps</td>
+            <td class="px-4 py-3"><code>controls</code></td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3"><strong>Direct2D</strong></td>
+            <td class="px-4 py-3">Custom graphics, games</td>
+            <td class="px-4 py-3"><code>d2d</code></td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3"><strong>WebView2</strong></td>
+            <td class="px-4 py-3">Web-based UI, hybrid apps</td>
+            <td class="px-4 py-3"><code>webview</code></td>
+          </tr>
+          <tr>
+            <td class="px-4 py-3"><strong>WinRT XAML</strong></td>
+            <td class="px-4 py-3">Modern UWP/WinUI apps</td>
+            <td class="px-4 py-3"><code>xaml</code></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Layout Types -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Layout Types</h2>
+    
+    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Thickness</h3>
+    <p class="text-gray-600 mb-2">Used for margins, padding, and borders:</p>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::Thickness;
+
+// Uniform thickness (all sides equal)
+let margin = Thickness::uniform(16.0);
+
+// Symmetric (horizontal, vertical)
+let padding = Thickness::symmetric(8.0, 4.0);
+
+// All four sides
+let border = Thickness::new(1.0, 2.0, 1.0, 2.0); // left, top, right, bottom
+
+// Access individual values
+println!("Left: &#123;&#125;, Top: &#123;&#125;", border.left, border.top);</code></pre>
+
+    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Corner Radius</h3>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::CornerRadius;
+
+// Uniform radius
+let rounded = CornerRadius::uniform(8.0);
+
+// Access individual corners
+let radius = CornerRadius &#123;
+    top_left: 8.0,
+    top_right: 8.0,
+    bottom_right: 0.0,
+    bottom_left: 0.0,
+&#125;;</code></pre>
+
+    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Grid Length</h3>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::GridLength;
+
+// Auto-size based on content
+let auto = GridLength::Auto;
+
+// Fixed pixel size
+let fixed = GridLength::Pixel(200.0);
+
+// Proportional (star) sizing
+let star = GridLength::Star(1.0);  // 1*
+let double_star = GridLength::Star(2.0);  // 2*</code></pre>
+  </section>
+
+  <!-- Alignment -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Alignment</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::&#123;HorizontalAlignment, VerticalAlignment&#125;;
+
+// Horizontal alignment options
+let h_left = HorizontalAlignment::Left;
+let h_center = HorizontalAlignment::Center;
+let h_right = HorizontalAlignment::Right;
+let h_stretch = HorizontalAlignment::Stretch; // default
+
+// Vertical alignment options
+let v_top = VerticalAlignment::Top;
+let v_center = VerticalAlignment::Center;
+let v_bottom = VerticalAlignment::Bottom;
+let v_stretch = VerticalAlignment::Stretch; // default</code></pre>
+  </section>
+
+  <!-- Colors -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Colors</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::XamlColor;
+
+// From RGB (fully opaque)
+let red = XamlColor::rgb(255, 0, 0);
+
+// From ARGB (with alpha)
+let semi_transparent = XamlColor::argb(128, 0, 0, 255);
+
+// From hex values
+let coral = XamlColor::from_rgb_hex(0xFF7F50);
+let with_alpha = XamlColor::from_argb_hex(0x80FF7F50);
+
+// Predefined constants
+let black = XamlColor::BLACK;
+let white = XamlColor::WHITE;
+let red = XamlColor::RED;
+let green = XamlColor::GREEN;
+let blue = XamlColor::BLUE;
+let gray = XamlColor::GRAY;
+let transparent = XamlColor::TRANSPARENT;</code></pre>
+  </section>
+
+  <!-- Typography -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Typography</h2>
+    
+    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Font Weight</h3>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::FontWeight;
+
+let thin = FontWeight::Thin;         // 100
+let light = FontWeight::Light;       // 300
+let normal = FontWeight::Normal;     // 400 (default)
+let medium = FontWeight::Medium;     // 500
+let semi_bold = FontWeight::SemiBold; // 600
+let bold = FontWeight::Bold;         // 700
+let black = FontWeight::Black;       // 900</code></pre>
+
+    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Font Style</h3>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::FontStyle;
+
+let normal = FontStyle::Normal;   // Upright text
+let italic = FontStyle::Italic;   // Italic text
+let oblique = FontStyle::Oblique; // Slanted text</code></pre>
+
+    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Text Wrapping &amp; Trimming</h3>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::&#123;TextWrapping, TextTrimming&#125;;
+
+// Wrapping modes
+let no_wrap = TextWrapping::NoWrap;           // Single line
+let wrap = TextWrapping::Wrap;                // Wrap at boundaries
+let wrap_words = TextWrapping::WrapWholeWords; // Wrap whole words only
+
+// Trimming modes
+let none = TextTrimming::None;
+let char_ellipsis = TextTrimming::CharacterEllipsis; // "Hello Wor..."
+let word_ellipsis = TextTrimming::WordEllipsis;      // "Hello..."
+let clip = TextTrimming::Clip;                        // "Hello Wor"</code></pre>
+  </section>
+
+  <!-- Theme -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Themes &amp; Visibility</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::&#123;ElementTheme, Visibility, Orientation&#125;;
+
+// Theme options
+let theme = ElementTheme::Default; // System default
+let light = ElementTheme::Light;
+let dark = ElementTheme::Dark;
+
+// Visibility
+let visible = Visibility::Visible;
+let collapsed = Visibility::Collapsed; // Takes no space
+
+// Layout orientation
+let horizontal = Orientation::Horizontal;
+let vertical = Orientation::Vertical;</code></pre>
+  </section>
+
+  <!-- ScrollBar -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">ScrollBar Visibility</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::ScrollBarVisibility;
+
+let disabled = ScrollBarVisibility::Disabled; // Never shows
+let auto = ScrollBarVisibility::Auto;         // Shows when needed (default)
+let visible = ScrollBarVisibility::Visible;   // Always shows
+let hidden = ScrollBarVisibility::Hidden;     // Never shows, but scrollable</code></pre>
+  </section>
+
+  <!-- UI Builder -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">UI Builder</h2>
+    <p class="text-gray-600 mb-4">
+      A fluent API for building UI configurations programmatically:
+    </p>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::&#123;UiBuilder, ElementTheme, Thickness&#125;;
+
+let ui = UiBuilder::new()
+    .theme(ElementTheme::Dark)
+    .margin(Thickness::uniform(16.0))
+    .padding(Thickness::symmetric(8.0, 4.0));
+
+// Access configured values
+println!("Theme: &#123;:?&#125;", ui.theme);
+println!("Margin: &#123;:?&#125;", ui.margin);</code></pre>
+  </section>
+
+  <!-- XAML Islands -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">XAML Islands</h2>
+    <p class="text-gray-600 mb-4">
+      XAML Islands allow hosting modern XAML controls in Win32 applications (Windows 10 1903+):
+    </p>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::xaml::XamlHost;
+
+// Create XAML host for a Win32 window
+let host = XamlHost::new(hwnd)?;
+
+// The host can be used to set XAML content
+// (Full implementation requires UWP app context)</code></pre>
+    <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mt-4">
+      <p class="text-yellow-800">
+        <strong>Requirements:</strong> XAML Islands require Windows 10 1903+ and may require 
+        application identity (packaged app or identity registration).
+      </p>
+    </div>
+  </section>
+</article>
+

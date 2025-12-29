@@ -1,0 +1,238 @@
+<article class="prose prose-slate max-w-none">
+  <h1 class="text-4xl font-bold text-gray-900 mb-4">WebView2</h1>
+  <p class="text-xl text-gray-600 mb-8">
+    Embed a Chromium-based web browser in your Windows application using Microsoft Edge WebView2.
+  </p>
+
+  <!-- Feature Flag -->
+  <section class="mb-12">
+    <div class="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6">
+      <p class="text-amber-800">
+        <strong>Feature Flag Required:</strong> Enable the <code>webview2</code> feature in your <code>Cargo.toml</code>:
+      </p>
+      <pre class="bg-amber-100 text-amber-900 p-3 mt-2 rounded overflow-x-auto"><code>[dependencies]
+ergonomic-windows = &#123; version = "0.1", features = ["webview2"] &#125;</code></pre>
+    </div>
+  </section>
+
+  <!-- Overview -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Overview</h2>
+    <p class="text-gray-600 mb-4">
+      WebView2 allows you to embed web content (HTML, CSS, JavaScript) in your native Windows application. 
+      It uses the same rendering engine as Microsoft Edge (Chromium).
+    </p>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+      <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+        <h4 class="font-semibold text-blue-800 mb-2">Modern Web</h4>
+        <p class="text-sm text-gray-600">Full HTML5, CSS3, ES6+ support</p>
+      </div>
+      <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+        <h4 class="font-semibold text-green-800 mb-2">Native Integration</h4>
+        <p class="text-sm text-gray-600">JavaScript ↔ Rust communication</p>
+      </div>
+      <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+        <h4 class="font-semibold text-purple-800 mb-2">Evergreen</h4>
+        <p class="text-sm text-gray-600">Auto-updates with Edge browser</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Prerequisites -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Prerequisites</h2>
+    <p class="text-gray-600 mb-4">
+      WebView2 requires the Microsoft Edge WebView2 Runtime to be installed:
+    </p>
+    <ul class="list-disc list-inside text-gray-600 space-y-2">
+      <li><strong>Windows 11:</strong> Pre-installed</li>
+      <li><strong>Windows 10 (1803+):</strong> Pre-installed or auto-installed via Windows Update</li>
+      <li><strong>Older systems:</strong> <a href="https://developer.microsoft.com/en-us/microsoft-edge/webview2/" class="text-blue-600 hover:underline">Download Runtime</a></li>
+    </ul>
+  </section>
+
+  <!-- Quick Start -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Quick Start</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::webview::&#123;WebView, WebViewBuilder&#125;;
+
+// Create a WebView with initial URL
+let webview = WebViewBuilder::new()
+    .with_url("https://www.rust-lang.org")
+    .with_dev_tools(true)  // Enable F12 developer tools
+    .build(parent_hwnd)?;
+
+// Navigate to a different URL
+webview.navigate("https://docs.rs")?;
+
+// Execute JavaScript
+webview.execute_script("document.body.style.background = 'lightblue';")?;</code></pre>
+  </section>
+
+  <!-- Builder Options -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">WebViewBuilder Options</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">let webview = WebViewBuilder::new()
+    // Initial URL
+    .with_url("https://example.com")
+    
+    // User data folder (browser profile location)
+    .with_user_data_folder("C:\\MyApp\\WebViewData")
+    
+    // Enable/disable developer tools (F12)
+    .with_dev_tools(true)
+    
+    // Enable/disable context menu (right-click)
+    .with_context_menu(true)
+    
+    // Enable/disable zoom controls
+    .with_zoom(true)
+    
+    .build(hwnd)?;</code></pre>
+  </section>
+
+  <!-- Navigation -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Navigation</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">// Navigate to URL
+webview.navigate("https://example.com")?;
+
+// Navigate to HTML string
+webview.navigate_to_string(r#"
+    &lt;html&gt;
+    &lt;body style="font-family: sans-serif; padding: 20px;"&gt;
+        &lt;h1&gt;Hello from Rust!&lt;/h1&gt;
+        &lt;p&gt;This HTML was loaded directly from a string.&lt;/p&gt;
+    &lt;/body&gt;
+    &lt;/html&gt;
+"#)?;
+
+// Navigation controls
+webview.go_back()?;
+webview.go_forward()?;
+webview.reload()?;
+webview.stop()?;
+
+// Get current URL
+let url = webview.url()?;
+println!("Current URL: &#123;&#125;", url);</code></pre>
+  </section>
+
+  <!-- JavaScript Execution -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">JavaScript Execution</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">// Execute JavaScript
+webview.execute_script("alert('Hello from Rust!');")?;
+
+// Modify the DOM
+webview.execute_script(r#"
+    document.getElementById('status').textContent = 'Updated from Rust';
+    document.body.classList.add('dark-mode');
+"#)?;
+
+// Call JavaScript functions
+webview.execute_script("myApp.initialize(&#123; theme: 'dark' &#125;);")?;</code></pre>
+  </section>
+
+  <!-- Web Messaging -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Web Messaging</h2>
+    <p class="text-gray-600 mb-4">
+      Send messages between Rust and JavaScript:
+    </p>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">// Send JSON message to web page
+webview.post_web_message_as_json(r#"&#123;"type": "update", "data": &#123;"count": 42&#125;&#125;"#)?;
+
+// Send string message
+webview.post_web_message_as_string("Hello from Rust!")?;</code></pre>
+
+    <p class="text-gray-600 mt-4 mb-2">Receive messages in JavaScript:</p>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-javascript">// In your web page
+window.chrome.webview.addEventListener('message', event =&gt; &#123;
+    console.log('Message from Rust:', event.data);
+    
+    // Parse JSON messages
+    if (typeof event.data === 'string') &#123;
+        const data = JSON.parse(event.data);
+        handleMessage(data);
+    &#125;
+&#125;);
+
+// Send message to Rust
+window.chrome.webview.postMessage(&#123; action: 'save', payload: formData &#125;);</code></pre>
+  </section>
+
+  <!-- Visibility and Bounds -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Visibility &amp; Bounds</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">// Show/hide
+webview.show();
+webview.hide();
+
+// Resize to match parent window
+webview.resize_to_parent()?;
+
+// Set specific bounds
+webview.set_bounds(
+    0,    // left
+    0,    // top
+    800,  // right
+    600   // bottom
+)?;</code></pre>
+  </section>
+
+  <!-- Use Cases -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Common Use Cases</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <h4 class="font-semibold text-gray-800 mb-2">Hybrid Apps</h4>
+        <p class="text-sm text-gray-600">Build UI with web technologies while accessing native APIs through Rust.</p>
+      </div>
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <h4 class="font-semibold text-gray-800 mb-2">Documentation Viewer</h4>
+        <p class="text-sm text-gray-600">Render HTML/Markdown documentation in your app.</p>
+      </div>
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <h4 class="font-semibold text-gray-800 mb-2">OAuth Login</h4>
+        <p class="text-sm text-gray-600">Embed login pages for third-party authentication.</p>
+      </div>
+      <div class="bg-gray-50 p-4 rounded-lg">
+        <h4 class="font-semibold text-gray-800 mb-2">Report Viewer</h4>
+        <p class="text-sm text-gray-600">Display rich reports and charts using web libraries.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Example: Simple Browser -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Example: Simple Browser</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::prelude::*;
+use ergonomic_windows::webview::WebViewBuilder;
+
+fn main() -> Result&lt;()&gt; &#123;
+    // Create main window
+    let window = WindowBuilder::new()
+        .title("Mini Browser")
+        .size(1024, 768)
+        .build()?;
+    
+    // Create WebView
+    let webview = WebViewBuilder::new()
+        .with_url("https://www.rust-lang.org")
+        .with_dev_tools(true)
+        .build(window.hwnd())?;
+    
+    // Handle window resize
+    window.on_resize(|w, h| &#123;
+        webview.resize_to_parent().ok();
+    &#125;);
+    
+    // Run message loop
+    window.run();
+    
+    Ok(())
+&#125;</code></pre>
+  </section>
+</article>
+

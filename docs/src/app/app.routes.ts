@@ -20,6 +20,11 @@ export const routes: Routes = [
   { path: 'api/module', loadComponent: () => import('./pages/api/module/module').then(m => m.ModuleApi) },
   { path: 'api/sysinfo', loadComponent: () => import('./pages/api/sysinfo/sysinfo').then(m => m.SysinfoApi) },
   { path: 'api/security', loadComponent: () => import('./pages/api/security/security').then(m => m.SecurityApi) },
+  // UI modules
+  { path: 'api/controls', loadComponent: () => import('./pages/api/controls/controls').then(m => m.ControlsApi) },
+  { path: 'api/d2d', loadComponent: () => import('./pages/api/d2d/d2d').then(m => m.D2dApi) },
+  { path: 'api/webview', loadComponent: () => import('./pages/api/webview/webview').then(m => m.WebviewApi) },
+  { path: 'api/xaml', loadComponent: () => import('./pages/api/xaml/xaml').then(m => m.XamlApi) },
   // Guides
   { path: 'guides/safety', loadComponent: () => import('./pages/guides/safety/safety').then(m => m.SafetyGuide) },
   { path: 'guides/performance', loadComponent: () => import('./pages/guides/performance/performance').then(m => m.PerformanceGuide) },

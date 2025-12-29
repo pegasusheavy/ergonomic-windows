@@ -1,0 +1,273 @@
+<article class="prose prose-slate max-w-none">
+  <h1 class="text-4xl font-bold text-gray-900 mb-4">Win32 Common Controls</h1>
+  <p class="text-xl text-gray-600 mb-8">
+    Safe wrappers for Windows common controls including buttons, edit boxes, list boxes, combo boxes, and progress bars.
+  </p>
+
+  <!-- Overview -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Overview</h2>
+    <p class="text-gray-600 mb-4">
+      The <code class="bg-gray-100 px-2 py-1 rounded">controls</code> module provides ergonomic wrappers around 
+      Win32 common controls. These are the standard UI elements used in traditional Windows desktop applications.
+    </p>
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+      <p class="text-blue-800">
+        <strong>Note:</strong> Controls require a parent window. Use the <code>window</code> module to create 
+        a parent window first.
+      </p>
+    </div>
+  </section>
+
+  <!-- Initialization -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Initialization</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::controls::init_common_controls;
+
+// Initialize common controls (called automatically by control constructors)
+init_common_controls()?;</code></pre>
+  </section>
+
+  <!-- Button -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Button</h2>
+    <p class="text-gray-600 mb-4">
+      Create push buttons, checkboxes, radio buttons, and group boxes.
+    </p>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::controls::&#123;Button, ButtonStyle, Control&#125;;
+
+// Create a push button
+let button = Button::new(
+    parent_hwnd,
+    "Click Me",
+    10, 10,      // x, y position
+    100, 30,     // width, height
+    1001,        // control ID
+    ButtonStyle::Push,
+)?;
+
+// Create a checkbox
+let checkbox = Button::new(
+    parent_hwnd,
+    "Enable Feature",
+    10, 50,
+    150, 24,
+    1002,
+    ButtonStyle::AutoCheckbox,
+)?;
+
+// Check/uncheck programmatically
+Button::set_checked(&checkbox, true);
+let is_checked = Button::is_checked(&checkbox);</code></pre>
+
+    <h3 class="text-xl font-semibold text-gray-800 mt-6 mb-3">Button Styles</h3>
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-200 rounded-lg">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Style</th>
+            <th class="px-4 py-3 text-left text-sm font-semibold text-gray-700">Description</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-200">
+          <tr><td class="px-4 py-3"><code>Push</code></td><td class="px-4 py-3">Standard push button</td></tr>
+          <tr><td class="px-4 py-3"><code>Default</code></td><td class="px-4 py-3">Default push button (responds to Enter)</td></tr>
+          <tr><td class="px-4 py-3"><code>Checkbox</code></td><td class="px-4 py-3">Manual checkbox</td></tr>
+          <tr><td class="px-4 py-3"><code>AutoCheckbox</code></td><td class="px-4 py-3">Auto-toggling checkbox</td></tr>
+          <tr><td class="px-4 py-3"><code>Radio</code></td><td class="px-4 py-3">Manual radio button</td></tr>
+          <tr><td class="px-4 py-3"><code>AutoRadio</code></td><td class="px-4 py-3">Auto-selecting radio button</td></tr>
+          <tr><td class="px-4 py-3"><code>GroupBox</code></td><td class="px-4 py-3">Group box container</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Edit -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Edit (Text Box)</h2>
+    <p class="text-gray-600 mb-4">
+      Create single-line and multi-line text input controls.
+    </p>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::controls::&#123;Edit, EditStyle, TextAlign&#125;;
+
+// Create a simple text box
+let edit = Edit::new(
+    parent_hwnd,
+    "Default text",
+    10, 100,
+    200, 24,
+    1003,
+    EditStyle::default(),
+)?;
+
+// Create a password field
+let password = Edit::new(
+    parent_hwnd,
+    "",
+    10, 130,
+    200, 24,
+    1004,
+    EditStyle &#123;
+        password: true,
+        ..Default::default()
+    &#125;,
+)?;
+
+// Create a multiline text area
+let textarea = Edit::new(
+    parent_hwnd,
+    "",
+    10, 160,
+    300, 100,
+    1005,
+    EditStyle &#123;
+        multiline: true,
+        auto_vscroll: true,
+        ..Default::default()
+    &#125;,
+)?;
+
+// Control operations
+Edit::set_limit(&edit, 100);           // Max 100 characters
+Edit::select_all(&edit);               // Select all text
+Edit::replace_selection(&edit, "new"); // Replace selection
+let (start, end) = Edit::selection(&edit);</code></pre>
+  </section>
+
+  <!-- Label -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Label (Static Text)</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::controls::Label;
+
+let label = Label::new(
+    parent_hwnd,
+    "Username:",
+    10, 100,
+    80, 20,
+    1006,
+)?;
+
+// Update label text
+label.set_text("Email:");</code></pre>
+  </section>
+
+  <!-- Progress Bar -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Progress Bar</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::controls::&#123;ProgressBar, ProgressStyle&#125;;
+
+// Standard progress bar
+let progress = ProgressBar::new(
+    parent_hwnd,
+    10, 200,
+    300, 20,
+    1007,
+    ProgressStyle::Standard,
+)?;
+
+// Configure range and position
+ProgressBar::set_range(&progress, 0, 100);
+ProgressBar::set_pos(&progress, 50);
+
+// Step-based progress
+ProgressBar::set_step(&progress, 10);
+ProgressBar::step(&progress); // Advance by step amount
+
+// Marquee (indeterminate) progress bar
+let marquee = ProgressBar::new(
+    parent_hwnd,
+    10, 230,
+    300, 20,
+    1008,
+    ProgressStyle::Marquee,
+)?;
+ProgressBar::set_marquee(&marquee, true, 30); // Enable with 30ms interval</code></pre>
+  </section>
+
+  <!-- ListBox -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">List Box</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::controls::ListBox;
+
+// Single-select list box
+let listbox = ListBox::new(
+    parent_hwnd,
+    10, 260,
+    200, 120,
+    1009,
+    false, // multi_select
+)?;
+
+// Add items
+ListBox::add_string(&listbox, "Item 1");
+ListBox::add_string(&listbox, "Item 2");
+ListBox::add_string(&listbox, "Item 3");
+ListBox::insert_string(&listbox, 1, "Inserted at 1");
+
+// Selection
+ListBox::set_selected_index(&listbox, 0);
+let selected = ListBox::selected_index(&listbox);
+
+// Other operations
+let count = ListBox::count(&listbox);
+ListBox::delete_string(&listbox, 0);
+ListBox::clear(&listbox);</code></pre>
+  </section>
+
+  <!-- ComboBox -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Combo Box</h2>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">use ergonomic_windows::controls::ComboBox;
+
+// Dropdown list (read-only)
+let combo = ComboBox::new(
+    parent_hwnd,
+    10, 400,
+    200, 200, // Height includes dropdown
+    1010,
+    true, // dropdown (read-only)
+)?;
+
+// Editable dropdown
+let editable_combo = ComboBox::new(
+    parent_hwnd,
+    10, 430,
+    200, 200,
+    1011,
+    false, // editable dropdown
+)?;
+
+// Add items and manage selection
+ComboBox::add_string(&combo, "Option 1");
+ComboBox::add_string(&combo, "Option 2");
+ComboBox::set_selected_index(&combo, 0);
+let selected = ComboBox::selected_index(&combo);</code></pre>
+  </section>
+
+  <!-- Control Base -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Control Base Class</h2>
+    <p class="text-gray-600 mb-4">
+      All controls share common functionality through the <code>Control</code> struct:
+    </p>
+    <pre ngNonBindable class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto"><code class="language-rust">// Show/hide
+control.show();
+control.hide();
+
+// Enable/disable
+control.enable();
+control.disable();
+
+// Get/set text
+let text = control.text();
+control.set_text("New text");
+
+// User data (for associating custom data)
+control.set_user_data(my_data as isize);
+let data = control.user_data();
+
+// Get raw handle (for interop)
+let hwnd = control.hwnd();</code></pre>
+  </section>
+</article>
+
