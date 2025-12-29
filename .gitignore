@@ -1,0 +1,39 @@
+# Rust / Cargo
+/target/
+**/*.rs.bk
+
+# Cargo.lock - not committed for libraries per Rust convention
+# For applications, remove this line to commit Cargo.lock
+Cargo.lock
+
+# Fuzzing
+/fuzz/target/
+/fuzz/corpus/
+/fuzz/artifacts/
+/fuzz/coverage/
+
+# Memory profiling
+dhat-heap.json
+dhat-*.json
+
+# Benchmark results (keep the source, ignore generated reports)
+/target/criterion/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Debug files
+*.pdb
+
+# Backup files
+*.bak
+*.orig

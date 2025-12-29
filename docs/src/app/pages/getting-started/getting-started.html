@@ -1,0 +1,143 @@
+<div class="prose max-w-none">
+  <h1 class="text-4xl font-bold text-gray-900 mb-4">Getting Started</h1>
+  <p class="text-xl text-gray-600 mb-8">
+    Get up and running with ergonomic-windows in minutes.
+  </p>
+
+  <nav class="bg-gray-50 rounded-lg p-4 mb-8">
+    <h4 class="text-sm font-semibold text-gray-500 uppercase mb-3">On this page</h4>
+    <ul class="space-y-2 text-sm">
+      <li><a href="#installation" class="text-primary hover:underline">Installation</a></li>
+      <li><a href="#requirements" class="text-primary hover:underline">Requirements</a></li>
+      <li><a href="#basic-usage" class="text-primary hover:underline">Basic Usage</a></li>
+      <li><a href="#modules" class="text-primary hover:underline">Module Overview</a></li>
+      <li><a href="#error-handling" class="text-primary hover:underline">Error Handling</a></li>
+    </ul>
+  </nav>
+
+  <h2 id="installation" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Installation</h2>
+  <p class="text-gray-700 mb-4">
+    Add ergonomic-windows to your <code class="bg-gray-100 px-2 py-1 rounded">Cargo.toml</code>:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100">[dependencies]
+ergonomic-windows = "0.1"</code></pre>
+  </div>
+
+  <h2 id="requirements" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Requirements</h2>
+  <ul class="list-disc list-inside text-gray-700 space-y-2 mb-6">
+    <li><strong>Rust:</strong> 1.70.0 or later</li>
+    <li><strong>Target:</strong> Windows 10/11 (x86_64-pc-windows-msvc)</li>
+    <li><strong>Dependencies:</strong> Uses the official <code class="bg-gray-100 px-1 rounded">windows</code> crate</li>
+  </ul>
+
+  <h2 id="basic-usage" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Basic Usage</h2>
+  <p class="text-gray-700 mb-4">
+    Import the prelude to get access to all commonly used types:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::prelude::*;
+
+<span class="text-purple-400">fn</span> <span class="text-yellow-400">main</span>() -> Result&lt;()&gt; &#123;
+    <span class="text-gray-500">// Your code here</span>
+    Ok(())
+&#125;</code></pre>
+  </div>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">String Conversions</h3>
+  <p class="text-gray-700 mb-4">
+    Windows APIs use UTF-16 strings. ergonomic-windows handles this automatically:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::string::&#123;to_wide, from_wide, WideString&#125;;
+
+<span class="text-gray-500">// Convert to UTF-16 (null-terminated)</span>
+<span class="text-purple-400">let</span> wide: Vec&lt;u16&gt; = to_wide(<span class="text-green-400">"Hello, Windows!"</span>);
+
+<span class="text-gray-500">// Convert back to UTF-8</span>
+<span class="text-purple-400">let</span> s = from_wide(&amp;wide)?;
+
+<span class="text-gray-500">// Use WideString for API calls</span>
+<span class="text-purple-400">let</span> ws = WideString::new(<span class="text-green-400">"filename.txt"</span>);
+<span class="text-purple-400">let</span> ptr = ws.as_pcwstr(); <span class="text-gray-500">// For Windows API calls</span></code></pre>
+  </div>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Handle Management</h3>
+  <p class="text-gray-700 mb-4">
+    Handles are automatically closed when dropped:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::handle::OwnedHandle;
+
+&#123;
+    <span class="text-purple-400">let</span> handle = OwnedHandle::new(raw_handle)?;
+    <span class="text-gray-500">// Use the handle...</span>
+&#125; <span class="text-gray-500">// Handle is automatically closed here</span></code></pre>
+  </div>
+
+  <h2 id="modules" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Module Overview</h2>
+
+  <div class="grid gap-4 mb-8">
+    <a routerLink="/api/string" class="block p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+      <h4 class="font-semibold text-gray-900">string</h4>
+      <p class="text-sm text-gray-600">UTF-8/UTF-16 conversions, WideString, WideStringBuilder</p>
+    </a>
+    <a routerLink="/api/handle" class="block p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+      <h4 class="font-semibold text-gray-900">handle</h4>
+      <p class="text-sm text-gray-600">RAII wrappers for Windows handles</p>
+    </a>
+    <a routerLink="/api/process" class="block p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+      <h4 class="font-semibold text-gray-900">process</h4>
+      <p class="text-sm text-gray-600">Process creation and management</p>
+    </a>
+    <a routerLink="/api/registry" class="block p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+      <h4 class="font-semibold text-gray-900">registry</h4>
+      <p class="text-sm text-gray-600">Windows Registry access</p>
+    </a>
+    <a routerLink="/api/window" class="block p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+      <h4 class="font-semibold text-gray-900">window</h4>
+      <p class="text-sm text-gray-600">Window creation and message handling</p>
+    </a>
+    <a routerLink="/api/fs" class="block p-4 bg-white border border-gray-200 rounded-lg hover:shadow-md transition-shadow">
+      <h4 class="font-semibold text-gray-900">fs</h4>
+      <p class="text-sm text-gray-600">File system utilities</p>
+    </a>
+  </div>
+
+  <h2 id="error-handling" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Error Handling</h2>
+  <p class="text-gray-700 mb-4">
+    All fallible operations return <code class="bg-gray-100 px-1 rounded">Result&lt;T, ergonomic_windows::Error&gt;</code>.
+    The error type wraps Windows errors and provides helpful context:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::&#123;Result, Error&#125;;
+
+<span class="text-purple-400">fn</span> <span class="text-yellow-400">do_something</span>() -> Result&lt;()&gt; &#123;
+    <span class="text-purple-400">let</span> key = registry::Key::open(
+        RootKey::CURRENT_USER,
+        <span class="text-green-400">"NonExistent\\Path"</span>,
+        Access::READ
+    )?; <span class="text-gray-500">// Returns Err if key doesn't exist</span>
+
+    Ok(())
+&#125;</code></pre>
+  </div>
+
+  <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mt-8">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-blue-800">Next Steps</h3>
+        <p class="text-sm text-blue-700 mt-1">
+          Check out the <a routerLink="/api/string" class="underline">API Reference</a> for detailed documentation,
+          or read the <a routerLink="/guides/safety" class="underline">Safety Guide</a> to understand unsafe patterns.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+

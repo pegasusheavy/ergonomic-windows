@@ -1,0 +1,111 @@
+# Testing Guidelines
+
+Guidelines for writing and running tests in ergonomic-windows.
+
+## Test Location
+
+- **Unit tests**: In `#[cfg(test)]` modules within source files
+- **Integration tests**: In `tests/` directory
+- **Benchmarks**: In `benches/` directory
+
+## Running Tests
+
+```bash
+# All tests
+cargo test
+
+# Specific module
+cargo test string::
+
+# Specific test
+cargo test test_roundtrip
+
+# With output
+cargo test -- --nocapture
+
+# Ignored/slow tests
+cargo test -- --ignored
+```
+
+## Writing Unit Tests
+
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_feature_works() {
+        let input = "test";
+        let result = function(input);
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_error_on_invalid_input() {
+        let result = function("");
+        assert!(result.is_err());
+    }
+}
+```
+
+## Test Naming
+
+Use descriptive names: `test_<what>_<condition>_<outcome>`
+
+```rust
+#[test] fn test_from_wide_empty_returns_empty_string() { }
+#[test] fn test_owned_handle_invalid_rejected() { }
+#[test] fn test_key_open_nonexistent_errors() { }
+```
+
+## What to Test
+
+### Always Test
+- Happy path / normal operation
+- Error conditions
+- Edge cases (empty input, max values)
+- Unicode handling
+
+### Windows-Specific Tests
+```rust
+#[test]
+fn test_registry_roundtrip() {
+    // Create test key
+    let key = Key::create(
+        RootKey::CURRENT_USER,
+        r"Software\ErgonomicWindowsTest",
+        Access::ALL,
+    ).unwrap();
+
+    // Test value operations
+    key.set_value("test", &Value::dword(42)).unwrap();
+    let value = key.get_value("test").unwrap();
+    assert_eq!(value.as_dword(), Some(42));
+
+    // Cleanup
+    key.delete_value("test").unwrap();
+}
+```
+
+## Running Benchmarks
+
+```bash
+# All benchmarks
+cargo bench --target x86_64-pc-windows-msvc
+
+# Specific benchmark
+cargo bench --bench string_bench
+
+# With baseline comparison
+cargo bench -- --save-baseline before
+# Make changes
+cargo bench -- --baseline before
+```
+
+## Memory Profiling
+
+```bash
+cargo run --bin memory-profile --features dhat-heap
+# Produces dhat-heap.json for analysis
+```

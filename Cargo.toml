@@ -1,0 +1,58 @@
+[package]
+name = "ergonomic-windows"
+version = "0.1.0"
+edition = "2021"
+description = "Ergonomic wrappers around Windows APIs for Rust"
+license = "MIT OR Apache-2.0"
+authors = ["Pegasus Heavy Industries LLC"]
+repository = "https://github.com/phasetwo/ergonomic-windows"
+keywords = ["windows", "win32", "api", "ffi", "ergonomic"]
+categories = ["os::windows-apis", "api-bindings"]
+
+[dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Foundation",
+    "Win32_System_Threading",
+    "Win32_System_ProcessStatus",
+    "Win32_Security",
+    "Win32_Storage_FileSystem",
+    "Win32_System_IO",
+    "Win32_System_Registry",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_Graphics_Gdi",
+    "Win32_System_LibraryLoader",
+    "Win32_System_Diagnostics_Debug",
+    "Win32_System_SystemInformation",
+    "Win32_System_Memory",
+] }
+thiserror = "1.0"
+dhat = { version = "0.3", optional = true }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+tracking-allocator = "0.4"
+
+[features]
+default = []
+dhat-heap = ["dhat"]
+
+[lib]
+name = "ergonomic_windows"
+path = "src/lib.rs"
+
+[[bin]]
+name = "ergonomic-windows"
+path = "src/main.rs"
+
+[[bin]]
+name = "memory-profile"
+path = "src/bin/memory_profile.rs"
+required-features = ["dhat-heap"]
+
+[[bench]]
+name = "string_bench"
+harness = false
+
+[[bench]]
+name = "allocations"
+harness = false

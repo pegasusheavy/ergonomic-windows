@@ -1,0 +1,59 @@
+# Project Overview
+
+This is the `ergonomic-windows` Rust crate - ergonomic wrappers around Windows APIs.
+
+## Project Structure
+
+```
+ergonomic-windows/
+├── src/
+│   ├── lib.rs          # Library entry point and module exports
+│   ├── main.rs         # Demo binary
+│   ├── error.rs        # Error types and handling
+│   ├── handle.rs       # RAII handle wrappers
+│   ├── string.rs       # UTF-8/UTF-16 conversion
+│   ├── process.rs      # Process management
+│   ├── fs.rs           # File system operations
+│   ├── registry.rs     # Windows Registry access
+│   ├── window.rs       # Window creation and messages
+│   └── bin/
+│       └── memory_profile.rs  # Memory profiling tool
+├── benches/
+│   ├── string_bench.rs # String conversion benchmarks
+│   └── allocations.rs  # Allocation tracking benchmarks
+├── Cargo.toml          # Package manifest
+└── TODO.md             # Performance improvement tasks
+```
+
+## Key Concepts
+
+### Error Handling
+All fallible operations return `Result<T, Error>`. Use the `?` operator for propagation.
+
+### RAII Resources
+Windows handles are wrapped in types that implement `Drop` for automatic cleanup.
+
+### String Conversion
+Windows uses UTF-16, Rust uses UTF-8. Use `to_wide()`/`from_wide()` for conversion.
+
+## Build Targets
+
+This crate only compiles on Windows:
+- `x86_64-pc-windows-msvc` (primary)
+- `x86_64-pc-windows-gnu` (alternative)
+
+## Commands
+
+```bash
+# Build
+cargo build
+
+# Test
+cargo test
+
+# Benchmark
+cargo bench --target x86_64-pc-windows-msvc
+
+# Memory profiling
+cargo run --bin memory-profile --features dhat-heap
+```

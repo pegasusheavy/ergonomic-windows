@@ -1,0 +1,100 @@
+# Coding Standards
+
+Follow these coding standards when contributing to ergonomic-windows.
+
+## Rust Style
+
+### Formatting
+- Run `cargo fmt` before committing
+- Use 4 spaces for indentation
+- Maximum line length: 100 characters
+
+### Naming
+- Types: `PascalCase` (e.g., `OwnedHandle`, `WideString`)
+- Functions/methods: `snake_case` (e.g., `to_wide`, `get_value`)
+- Constants: `SCREAMING_SNAKE_CASE` (e.g., `INVALID_HANDLE_VALUE`)
+- Modules: `snake_case` (e.g., `registry`, `process`)
+
+### Imports
+```rust
+// Group imports in this order:
+use crate::error::{Error, Result};  // 1. Crate imports
+use std::path::Path;                 // 2. Standard library
+use windows::Win32::Foundation::*;   // 3. External crates
+```
+
+## Error Handling
+
+### Do
+```rust
+// Return Result for fallible operations
+pub fn open(path: &str) -> Result<Self>
+
+// Use ? for propagation
+let handle = OwnedHandle::new(unsafe { CreateFile(...)? })?;
+
+// Provide context in errors
+Err(Error::not_found(format!("File not found: {}", path)))
+```
+
+### Don't
+```rust
+// Don't panic in library code
+let result = operation().unwrap();  // BAD
+
+// Don't ignore errors silently
+let _ = risky_operation();  // BAD if this can fail meaningfully
+```
+
+## Unsafe Code
+
+### Requirements
+1. Every `unsafe` block must have a `// SAFETY:` comment
+2. Document all invariants that must be maintained
+3. Minimize the scope of `unsafe` blocks
+
+### Example
+```rust
+// SAFETY: The buffer is guaranteed to be valid for `len` bytes
+// because we just allocated it with that capacity.
+unsafe {
+    let ptr = buffer.as_mut_ptr();
+    WindowsApi(ptr, len);
+}
+```
+
+## Documentation
+
+### Required for Public Items
+```rust
+/// Brief description in one line.
+///
+/// More detailed explanation if needed.
+///
+/// # Example
+///
+/// ```
+/// use ergonomic_windows::module::function;
+/// let result = function("input")?;
+/// ```
+pub fn function(input: &str) -> Result<Output>
+```
+
+## Testing
+
+### Test File Structure
+```rust
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_happy_path() { ... }
+
+    #[test]
+    fn test_error_condition() { ... }
+
+    #[test]
+    fn test_edge_case() { ... }
+}
+```

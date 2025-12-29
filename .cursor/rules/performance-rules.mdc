@@ -1,0 +1,101 @@
+# Performance Rules
+
+Performance guidelines for ergonomic-windows development.
+
+## Allocation Guidelines
+
+### Avoid Unnecessary Allocations
+```rust
+// BAD: Always allocates
+fn process(s: &str) -> String {
+    s.to_string()
+}
+
+// GOOD: Use Cow when allocation is conditional
+fn process(s: &str) -> Cow<'_, str> {
+    if needs_change(s) {
+        Cow::Owned(modify(s))
+    } else {
+        Cow::Borrowed(s)
+    }
+}
+```
+
+### Pre-allocate When Size is Known
+```rust
+// BAD: Multiple reallocations
+let mut result = String::new();
+for item in items {
+    result.push_str(item);
+}
+
+// GOOD: Single allocation
+let total_len: usize = items.iter().map(|s| s.len()).sum();
+let mut result = String::with_capacity(total_len);
+for item in items {
+    result.push_str(item);
+}
+```
+
+## Inline Hints
+
+Add `#[inline]` to small, frequently-called functions:
+
+```rust
+#[inline]
+pub fn as_raw(&self) -> HANDLE {
+    self.handle
+}
+
+#[inline]
+pub fn is_empty(&self) -> bool {
+    self.len() == 0
+}
+```
+
+## Buffer Reuse
+
+Provide `clear()` methods for reusable buffers:
+
+```rust
+impl WideStringBuilder {
+    pub fn clear(&mut self) {
+        self.buffer.clear();
+    }
+}
+```
+
+## String Conversion
+
+Prefer direct UTF-16 conversion:
+
+```rust
+// Potentially two allocations
+let os = OsString::from_wide(wide);
+let s = os.into_string()?;
+
+// Single allocation
+let s = String::from_utf16(wide)?;
+```
+
+## Current Optimization Tasks
+
+See `TODO.md` for prioritized performance improvements:
+
+1. **High Priority**: Direct handle close, inline hints, Cow in quote_arg
+2. **Medium Priority**: Direct UTF-16 conversion, buffer pre-allocation
+3. **Low Priority**: Small string optimization, object pooling
+
+## Benchmarking Changes
+
+Always benchmark before and after performance changes:
+
+```bash
+# Save baseline
+cargo bench -- --save-baseline before
+
+# Make changes
+
+# Compare
+cargo bench -- --baseline before
+```

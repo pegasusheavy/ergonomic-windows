@@ -1,0 +1,128 @@
+# Windows API Patterns
+
+Patterns and best practices for working with Windows APIs in this crate.
+
+## Handle Management
+
+### Always Use RAII Wrappers
+```rust
+// CORRECT
+let handle = OwnedHandle::new(unsafe { CreateFile(...)? })?;
+// Handle automatically closed when dropped
+
+// WRONG - Manual management is error-prone
+let handle = unsafe { CreateFile(...)? };
+// ... code that might return early ...
+unsafe { CloseHandle(handle) }; // May never run!
+```
+
+## String Conversion
+
+### Rust to Windows
+```rust
+use crate::string::{WideString, to_wide};
+
+// For single use
+let wide = to_wide("text");
+unsafe { ApiCall(PCWSTR::from_raw(wide.as_ptr())) };
+
+// For reusable reference
+let ws = WideString::new("text");
+unsafe { ApiCall(ws.as_pcwstr()) };
+```
+
+### Windows to Rust
+```rust
+use crate::string::from_wide;
+
+let mut buffer = vec![0u16; 260];
+let len = unsafe { GetSomePath(&mut buffer) } as usize;
+buffer.truncate(len);
+let path = from_wide(&buffer)?;
+```
+
+## Error Handling by API Type
+
+### Returns windows::core::Result
+```rust
+unsafe { SomeApi(...)? };  // Direct ? works
+```
+
+### Returns BOOL, use GetLastError
+```rust
+let success = unsafe { SomeApi(...) };
+if !success.as_bool() {
+    return Err(crate::error::last_error());
+}
+```
+
+### Returns WIN32_ERROR
+```rust
+let err = unsafe { RegOpenKeyExW(...) };
+if err != ERROR_SUCCESS {
+    return Err(Error::Windows(windows::core::Error::from(err)));
+}
+```
+
+### Returns special values (INVALID_HANDLE_VALUE, null)
+```rust
+let handle = unsafe { CreateFile(...) };
+if handle == INVALID_HANDLE_VALUE {
+    return Err(crate::error::last_error());
+}
+```
+
+## Buffer Patterns
+
+### Query Size, Then Allocate
+```rust
+// First call to get required size
+let mut size = 0u32;
+unsafe { QueryInfo(None, &mut size) };
+
+// Allocate and fill
+let mut buffer = vec![0u8; size as usize];
+unsafe { QueryInfo(Some(&mut buffer), &mut size)? };
+buffer.truncate(size as usize);
+```
+
+### Fixed Maximum Size
+```rust
+const MAX_PATH: usize = 260;
+let mut buffer = vec![0u16; MAX_PATH];
+let len = unsafe { GetPath(&mut buffer) } as usize;
+buffer.truncate(len);
+```
+
+## CreateProcess Special Case
+
+```rust
+// Command line buffer MUST be mutable!
+let mut cmd_line = to_wide(&command);
+unsafe {
+    CreateProcessW(
+        None,
+        PWSTR(cmd_line.as_mut_ptr()),  // Mutable pointer
+        ...
+    )?;
+}
+```
+
+## Adding New Windows Features
+
+When adding new Windows API wrappers:
+
+1. Add required feature to `Cargo.toml`:
+```toml
+[dependencies.windows]
+features = [
+    # ... existing features ...
+    "Win32_NewFeature_Category",
+]
+```
+
+2. Follow the existing module patterns
+3. Wrap handles in RAII types
+4. Convert strings appropriately
+5. Handle errors per API convention
+6. Add tests and documentation

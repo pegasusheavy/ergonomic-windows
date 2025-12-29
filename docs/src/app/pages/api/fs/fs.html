@@ -1,0 +1,107 @@
+<div class="prose max-w-none">
+  <div class="flex items-center space-x-3 mb-6">
+    <span class="w-3 h-3 bg-orange-500 rounded-full"></span>
+    <h1 class="text-4xl font-bold text-gray-900 m-0">File System</h1>
+  </div>
+  <p class="text-xl text-gray-600 mb-8">
+    Windows-specific file system utilities and operations.
+  </p>
+
+  <div class="bg-gray-100 rounded-lg p-4 mb-8">
+    <code class="text-sm">use ergonomic_windows::fs::*;</code>
+  </div>
+
+  <!-- get_file_attributes -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">get_file_attributes</h2>
+    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">pub fn</span> <span class="text-yellow-400">get_file_attributes</span>(path: &amp;Path) -> Result&lt;FileAttributes&gt;</code></pre>
+    </div>
+    <p class="text-gray-700 mb-4">
+      Gets the Windows file attributes for a path. Returns a struct with methods to
+      check individual attribute flags.
+    </p>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::fs::get_file_attributes;
+<span class="text-purple-400">use</span> std::path::Path;
+
+<span class="text-purple-400">let</span> attrs = get_file_attributes(Path::new(<span class="text-green-400">"C:\\Windows"</span>))?;
+
+<span class="text-purple-400">if</span> attrs.is_directory() &#123;
+    println!(<span class="text-green-400">"It's a directory"</span>);
+&#125;
+
+<span class="text-purple-400">if</span> attrs.is_hidden() &#123;
+    println!(<span class="text-green-400">"It's hidden"</span>);
+&#125;</code></pre>
+    </div>
+  </section>
+
+  <!-- FileAttributes -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">FileAttributes</h2>
+    <p class="text-gray-700 mb-4">
+      Windows file attributes wrapper with convenient query methods.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">raw(&amp;self) -> u32</h4>
+        <p class="text-gray-600 text-sm">Returns the raw attribute bits.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_readonly(&amp;self) -> bool</h4>
+        <p class="text-gray-600 text-sm">FILE_ATTRIBUTE_READONLY</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_hidden(&amp;self) -> bool</h4>
+        <p class="text-gray-600 text-sm">FILE_ATTRIBUTE_HIDDEN</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_system(&amp;self) -> bool</h4>
+        <p class="text-gray-600 text-sm">FILE_ATTRIBUTE_SYSTEM</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_directory(&amp;self) -> bool</h4>
+        <p class="text-gray-600 text-sm">FILE_ATTRIBUTE_DIRECTORY</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_archive(&amp;self) -> bool</h4>
+        <p class="text-gray-600 text-sm">FILE_ATTRIBUTE_ARCHIVE</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_normal(&amp;self) -> bool</h4>
+        <p class="text-gray-600 text-sm">FILE_ATTRIBUTE_NORMAL</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_temporary(&amp;self) -> bool</h4>
+        <p class="text-gray-600 text-sm">FILE_ATTRIBUTE_TEMPORARY</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_compressed(&amp;self) -> bool</h4>
+        <p class="text-gray-600 text-sm">FILE_ATTRIBUTE_COMPRESSED</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_encrypted(&amp;self) -> bool</h4>
+        <p class="text-gray-600 text-sm">FILE_ATTRIBUTE_ENCRYPTED</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- exists_ex -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">exists_ex</h2>
+    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">pub fn</span> <span class="text-yellow-400">exists_ex</span>(path: &amp;Path) -> bool</code></pre>
+    </div>
+    <p class="text-gray-700 mb-4">
+      Checks if a path exists using the Windows API directly. This is slightly faster
+      than <code class="bg-gray-100 px-1 rounded">std::path::Path::exists()</code> and avoids
+      some edge cases with symlinks and special files.
+    </p>
+  </section>
+</div>
+

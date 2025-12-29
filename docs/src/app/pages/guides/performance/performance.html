@@ -1,0 +1,187 @@
+<div class="prose max-w-none">
+  <h1 class="text-4xl font-bold text-gray-900 mb-4">Performance Tips</h1>
+  <p class="text-xl text-gray-600 mb-8">
+    Optimize your Windows API code for maximum performance.
+  </p>
+
+  <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-8">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-green-800">Optimized by Default</h3>
+        <p class="text-sm text-green-700 mt-1">
+          ergonomic-windows is benchmarked and profiled. String conversions use single allocations,
+          and hot paths are inlined. Most users won't need to worry about performance.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bg-gray-50 rounded-lg p-4 mb-8">
+    <h4 class="text-sm font-semibold text-gray-500 uppercase mb-3">On this page</h4>
+    <ul class="space-y-2 text-sm">
+      <li><a href="#benchmarks" class="text-primary hover:underline">Benchmark Results</a></li>
+      <li><a href="#string-tips" class="text-primary hover:underline">String Conversion Tips</a></li>
+      <li><a href="#allocation-tips" class="text-primary hover:underline">Reducing Allocations</a></li>
+      <li><a href="#profiling" class="text-primary hover:underline">Profiling Your Code</a></li>
+    </ul>
+  </nav>
+
+  <h2 id="benchmarks" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Benchmark Results</h2>
+  <p class="text-gray-700 mb-4">
+    All operations have been benchmarked on Windows 11 with the MSVC toolchain:
+  </p>
+
+  <div class="overflow-x-auto mb-8">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Operation</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Allocations</th>
+        </tr>
+      </thead>
+      <tbody class="bg-white divide-y divide-gray-200">
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">to_wide("Hello")</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">~55 ns</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">1</td>
+        </tr>
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">from_wide(&amp;wide)</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">~64 ns</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">1</td>
+        </tr>
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">WideString::new("Hello")</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">~55 ns</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">1</td>
+        </tr>
+        <tr>
+          <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">to_wide (10,000 chars)</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">~6 µs</td>
+          <td class="px-6 py-4 whitespace-nowrap text-sm text-green-600 font-medium">1</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="string-tips" class="text-2xl font-bold text-gray-900 mt-12 mb-4">String Conversion Tips</h2>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Use WideStringBuilder for multiple strings</h3>
+  <p class="text-gray-700 mb-4">
+    When building strings from multiple parts, use <code class="bg-gray-100 px-1 rounded">WideStringBuilder</code>
+    with pre-allocated capacity:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-gray-500">// ❌ Multiple allocations</span>
+<span class="text-purple-400">let</span> s1 = to_wide(<span class="text-green-400">"Hello"</span>);
+<span class="text-purple-400">let</span> s2 = to_wide(<span class="text-green-400">", "</span>);
+<span class="text-purple-400">let</span> s3 = to_wide(<span class="text-green-400">"World"</span>);
+
+<span class="text-gray-500">// ✅ Single allocation with builder</span>
+<span class="text-purple-400">let</span> wide = WideStringBuilder::with_capacity(100)
+    .push(<span class="text-green-400">"Hello"</span>)
+    .push(<span class="text-green-400">", "</span>)
+    .push(<span class="text-green-400">"World"</span>)
+    .build();</code></pre>
+  </div>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Reuse builders in loops</h3>
+  <p class="text-gray-700 mb-4">
+    Use <code class="bg-gray-100 px-1 rounded">build_and_clear()</code> to reuse the same builder:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-purple-400">let mut</span> builder = WideStringBuilder::with_capacity(256);
+
+<span class="text-purple-400">for</span> name <span class="text-purple-400">in</span> names &#123;
+    builder.push(name);
+    <span class="text-purple-400">let</span> wide = builder.build_and_clear(); <span class="text-gray-500">// Returns buffer, clears for reuse</span>
+    process_name(&amp;wide);
+&#125;</code></pre>
+  </div>
+
+  <h2 id="allocation-tips" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Reducing Allocations</h2>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Keep WideStrings alive</h3>
+  <p class="text-gray-700 mb-4">
+    If you're making multiple calls with the same string, convert it once:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-gray-500">// ❌ Allocates on every call</span>
+<span class="text-purple-400">for</span> _ <span class="text-purple-400">in</span> 0..100 &#123;
+    api_call(WideString::new(<span class="text-green-400">"constant"</span>).as_pcwstr());
+&#125;
+
+<span class="text-gray-500">// ✅ Allocate once</span>
+<span class="text-purple-400">let</span> constant = WideString::new(<span class="text-green-400">"constant"</span>);
+<span class="text-purple-400">for</span> _ <span class="text-purple-400">in</span> 0..100 &#123;
+    api_call(constant.as_pcwstr());
+&#125;</code></pre>
+  </div>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Use with_capacity</h3>
+  <p class="text-gray-700 mb-4">
+    When you know the approximate size upfront:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-gray-500">// Pre-allocate for known-size data</span>
+<span class="text-purple-400">let</span> ws = WideString::with_capacity(MAX_PATH);
+
+<span class="text-purple-400">let</span> builder = WideStringBuilder::with_capacity(estimated_len);</code></pre>
+  </div>
+
+  <h2 id="profiling" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Profiling Your Code</h2>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Run benchmarks</h3>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-gray-500"># Run all benchmarks</span>
+cargo bench
+
+<span class="text-gray-500"># Run specific benchmark</span>
+cargo bench --bench string_bench
+
+<span class="text-gray-500"># Run allocation tracking</span>
+cargo bench --bench allocations</code></pre>
+  </div>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Memory profiling with dhat</h3>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-gray-500"># Run memory profiler</span>
+cargo run --bin memory-profile --features dhat-heap
+
+<span class="text-gray-500"># Open dhat-heap.json in the DHAT viewer:</span>
+<span class="text-gray-500"># https://nnethercote.github.io/dh_view/dh_view.html</span></code></pre>
+  </div>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">CPU profiling with flamegraph</h3>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-gray-500"># Install cargo-flamegraph</span>
+cargo install flamegraph
+
+<span class="text-gray-500"># Generate flamegraph</span>
+cargo flamegraph --bin your-binary</code></pre>
+  </div>
+
+  <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mt-8">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-blue-800">Measure First</h3>
+        <p class="text-sm text-blue-700 mt-1">
+          Don't optimize prematurely. The default implementations are already fast.
+          Only optimize after profiling shows a specific bottleneck.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+

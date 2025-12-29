@@ -1,0 +1,7 @@
+# Default owners for everything in the repo
+* @pegasusheavy
+
+# Specific paths can have different owners
+# /docs/ @documentation-team
+# /benches/ @performance-team
+

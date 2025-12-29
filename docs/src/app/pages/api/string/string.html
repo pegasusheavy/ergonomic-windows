@@ -1,0 +1,191 @@
+<div class="prose max-w-none">
+  <div class="flex items-center space-x-3 mb-6">
+    <span class="w-3 h-3 bg-blue-500 rounded-full"></span>
+    <h1 class="text-4xl font-bold text-gray-900 m-0">String Conversions</h1>
+  </div>
+  <p class="text-xl text-gray-600 mb-8">
+    UTF-8 to UTF-16 conversions for Windows API interoperability.
+  </p>
+
+  <div class="bg-gray-100 rounded-lg p-4 mb-8">
+    <code class="text-sm">use ergonomic_windows::string::*;</code>
+  </div>
+
+  <!-- to_wide -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">to_wide</h2>
+    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">pub fn</span> <span class="text-yellow-400">to_wide</span>(s: &amp;str) -> Vec&lt;u16&gt;</code></pre>
+    </div>
+    <p class="text-gray-700 mb-4">
+      Converts a Rust UTF-8 string to a null-terminated UTF-16 vector suitable for Windows APIs.
+    </p>
+    <h4 class="font-semibold text-gray-900 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">let</span> wide = to_wide(<span class="text-green-400">"Hello"</span>);
+assert_eq!(wide, vec![72, 101, 108, 108, 111, 0]);</code></pre>
+    </div>
+    <div class="bg-green-50 border-l-4 border-green-500 p-4 mt-4">
+      <p class="text-sm text-green-700">
+        <strong>Performance:</strong> Uses a single allocation with pre-calculated capacity.
+      </p>
+    </div>
+  </section>
+
+  <!-- from_wide -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">from_wide</h2>
+    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">pub fn</span> <span class="text-yellow-400">from_wide</span>(wide: &amp;[u16]) -> Result&lt;String&gt;</code></pre>
+    </div>
+    <p class="text-gray-700 mb-4">
+      Converts a null-terminated UTF-16 slice back to a Rust String. The slice may or may not include the null terminator.
+    </p>
+    <h4 class="font-semibold text-gray-900 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">let</span> wide = to_wide(<span class="text-green-400">"Hello"</span>);
+<span class="text-purple-400">let</span> s = from_wide(&amp;wide)?;
+assert_eq!(s, <span class="text-green-400">"Hello"</span>);</code></pre>
+    </div>
+  </section>
+
+  <!-- from_wide_ptr -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">from_wide_ptr</h2>
+    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">pub unsafe fn</span> <span class="text-yellow-400">from_wide_ptr</span>(ptr: *const u16) -> Result&lt;String&gt;</code></pre>
+    </div>
+    <p class="text-gray-700 mb-4">
+      Converts a null-terminated UTF-16 pointer to a Rust String.
+    </p>
+    <div class="bg-red-50 border-l-4 border-red-500 p-4 mt-4">
+      <h4 class="font-semibold text-red-800 mb-2">⚠️ Safety Requirements</h4>
+      <ul class="text-sm text-red-700 list-disc list-inside space-y-1">
+        <li><code>ptr</code> must be non-null</li>
+        <li><code>ptr</code> must point to valid, properly aligned memory</li>
+        <li>Memory must contain a null-terminated UTF-16 string</li>
+        <li>Memory must remain valid for the duration of the call</li>
+        <li>Memory must not be mutated during the call</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- WideString -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">WideString</h2>
+    <p class="text-gray-700 mb-4">
+      A wrapper for passing wide strings to Windows APIs. Owns the buffer and provides a pointer.
+    </p>
+    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">pub struct</span> WideString &#123;
+    buffer: Vec&lt;u16&gt;,
+&#125;</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Methods</h3>
+
+    <div class="space-y-6">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new(s: &amp;str) -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates a new WideString from a UTF-8 string.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">with_capacity(capacity: usize) -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates a new WideString with pre-allocated capacity.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">from_path(path: &amp;Path) -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates a WideString from a file path.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">as_ptr(&amp;self) -> *const u16</h4>
+        <p class="text-gray-600 text-sm">Returns a pointer to the null-terminated buffer.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">as_pcwstr(&amp;self) -> PCWSTR</h4>
+        <p class="text-gray-600 text-sm">Returns a PCWSTR for Windows API calls.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">len(&amp;self) -> usize</h4>
+        <p class="text-gray-600 text-sm">Returns the length in UTF-16 code units (excluding null terminator).</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">to_string_lossy(&amp;self) -> String</h4>
+        <p class="text-gray-600 text-sm">Converts back to a Rust String, replacing invalid sequences.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">let</span> ws = WideString::new(<span class="text-green-400">"Hello"</span>);
+
+<span class="text-gray-500">// Use with Windows APIs</span>
+<span class="text-purple-400">unsafe</span> &#123;
+    SomeWindowsApi(ws.as_pcwstr());
+&#125;</code></pre>
+    </div>
+  </section>
+
+  <!-- WideStringBuilder -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">WideStringBuilder</h2>
+    <p class="text-gray-700 mb-4">
+      A builder for incrementally constructing wide strings from multiple parts.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Methods</h3>
+
+    <div class="space-y-6">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new() -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates an empty builder.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">with_capacity(capacity: usize) -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates a builder with pre-allocated capacity.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">push(&amp;mut self, s: &amp;str) -> &amp;mut Self</h4>
+        <p class="text-gray-600 text-sm">Appends a string.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">push_char(&amp;mut self, c: u16) -> &amp;mut Self</h4>
+        <p class="text-gray-600 text-sm">Appends a single UTF-16 code unit.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">build(self) -> Vec&lt;u16&gt;</h4>
+        <p class="text-gray-600 text-sm">Finishes building and returns the null-terminated buffer.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">clear(&amp;mut self)</h4>
+        <p class="text-gray-600 text-sm">Clears the builder for reuse without deallocating.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">build_and_clear(&amp;mut self) -> Vec&lt;u16&gt;</h4>
+        <p class="text-gray-600 text-sm">Returns the buffer and clears for reuse.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">let mut</span> builder = WideStringBuilder::with_capacity(100);
+builder.push(<span class="text-green-400">"Hello"</span>)
+       .push(<span class="text-green-400">", "</span>)
+       .push(<span class="text-green-400">"World!"</span>);
+<span class="text-purple-400">let</span> wide = builder.build();</code></pre>
+    </div>
+  </section>
+</div>
+

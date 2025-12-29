@@ -1,0 +1,192 @@
+<div class="prose max-w-none">
+  <div class="flex items-center space-x-3 mb-6">
+    <span class="w-3 h-3 bg-yellow-500 rounded-full"></span>
+    <h1 class="text-4xl font-bold text-gray-900 m-0">Process Management</h1>
+  </div>
+  <p class="text-xl text-gray-600 mb-8">
+    Create, manage, and interact with Windows processes.
+  </p>
+
+  <div class="bg-gray-100 rounded-lg p-4 mb-8">
+    <code class="text-sm">use ergonomic_windows::process::*;</code>
+  </div>
+
+  <!-- Process -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Process</h2>
+    <p class="text-gray-700 mb-4">
+      Represents a running or completed process.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Methods</h3>
+
+    <div class="space-y-6">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">open(pid: u32, access: ProcessAccess) -> Result&lt;Self&gt;</h4>
+        <p class="text-gray-600 text-sm">Opens an existing process by its process ID.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">pid(&amp;self) -> u32</h4>
+        <p class="text-gray-600 text-sm">Returns the process ID.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">handle(&amp;self) -> HANDLE</h4>
+        <p class="text-gray-600 text-sm">Returns the raw process handle.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">wait(&amp;self) -> Result&lt;u32&gt;</h4>
+        <p class="text-gray-600 text-sm">Waits for the process to exit and returns the exit code.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">wait_timeout(&amp;self, timeout: Option&lt;Duration&gt;) -> Result&lt;u32&gt;</h4>
+        <p class="text-gray-600 text-sm">Waits with a timeout. Returns error if timeout expires.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">try_wait(&amp;self) -> Result&lt;Option&lt;u32&gt;&gt;</h4>
+        <p class="text-gray-600 text-sm">Non-blocking check. Returns Some(exit_code) if exited, None if still running.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">exit_code(&amp;self) -> Result&lt;u32&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the exit code. Returns 259 (STILL_ACTIVE) if process is running.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">terminate(&amp;self, exit_code: u32) -> Result&lt;()&gt;</h4>
+        <p class="text-gray-600 text-sm">Forcefully terminates the process.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">is_running(&amp;self) -> Result&lt;bool&gt;</h4>
+        <p class="text-gray-600 text-sm">Returns true if the process is still running.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Command -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Command</h2>
+    <p class="text-gray-700 mb-4">
+      Builder for creating new processes. Similar to <code class="bg-gray-100 px-1 rounded">std::process::Command</code>
+      but uses Windows-native APIs directly.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Methods</h3>
+
+    <div class="space-y-6">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new(program: impl Into&lt;String&gt;) -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates a new command for the specified program.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">arg(self, arg: impl Into&lt;String&gt;) -> Self</h4>
+        <p class="text-gray-600 text-sm">Adds an argument.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">args&lt;I, S&gt;(self, args: I) -> Self</h4>
+        <p class="text-gray-600 text-sm">Adds multiple arguments.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">current_dir(self, dir: impl Into&lt;String&gt;) -> Self</h4>
+        <p class="text-gray-600 text-sm">Sets the working directory.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">env(self, key: impl Into&lt;String&gt;, value: impl Into&lt;String&gt;) -> Self</h4>
+        <p class="text-gray-600 text-sm">Sets an environment variable.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new_console(self) -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates the process in a new console window.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">no_window(self) -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates the process without a window.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">spawn(self) -> Result&lt;Process&gt;</h4>
+        <p class="text-gray-600 text-sm">Spawns the process.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">run(self) -> Result&lt;u32&gt;</h4>
+        <p class="text-gray-600 text-sm">Spawns and waits for completion, returning the exit code.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::process::Command;
+
+<span class="text-gray-500">// Spawn notepad with a file</span>
+<span class="text-purple-400">let</span> process = Command::new(<span class="text-green-400">"notepad.exe"</span>)
+    .arg(<span class="text-green-400">"file.txt"</span>)
+    .spawn()?;
+
+<span class="text-gray-500">// Wait for it to exit</span>
+<span class="text-purple-400">let</span> exit_code = process.wait()?;
+
+<span class="text-gray-500">// Or run and wait in one call</span>
+<span class="text-purple-400">let</span> exit_code = Command::new(<span class="text-green-400">"cmd.exe"</span>)
+    .args([<span class="text-green-400">"/c"</span>, <span class="text-green-400">"echo Hello"</span>])
+    .no_window()
+    .run()?;</code></pre>
+    </div>
+  </section>
+
+  <!-- ProcessAccess -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">ProcessAccess</h2>
+    <p class="text-gray-700 mb-4">
+      Process access rights for opening existing processes.
+    </p>
+
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">ProcessAccess::ALL</h4>
+        <p class="text-gray-600 text-sm">Full access to the process.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">ProcessAccess::QUERY</h4>
+        <p class="text-gray-600 text-sm">Access to query process information.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">ProcessAccess::TERMINATE</h4>
+        <p class="text-gray-600 text-sm">Access to terminate the process.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">ProcessAccess::QUERY_AND_TERMINATE</h4>
+        <p class="text-gray-600 text-sm">Access to query and terminate.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Helper Functions -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Helper Functions</h2>
+
+    <div class="space-y-6">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">current_pid() -> u32</h4>
+        <p class="text-gray-600 text-sm">Returns the current process ID. Always succeeds.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">current_process() -> HANDLE</h4>
+        <p class="text-gray-600 text-sm">Returns a pseudo-handle to the current process. Does not need to be closed.</p>
+      </div>
+    </div>
+  </section>
+</div>
+

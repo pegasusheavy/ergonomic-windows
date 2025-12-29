@@ -1,0 +1,183 @@
+<div class="prose max-w-none">
+  <h1 class="text-4xl font-bold text-gray-900 mb-4">Safety &amp; Unsafe Code</h1>
+  <p class="text-xl text-gray-600 mb-8">
+    Understanding unsafe code patterns and safety guarantees in ergonomic-windows.
+  </p>
+
+  <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-8">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-yellow-800">Windows API Safety</h3>
+        <p class="text-sm text-yellow-700 mt-1">
+          Windows APIs are inherently unsafe. This crate provides safe abstractions where possible,
+          but some operations require unsafe code. Always read the safety documentation carefully.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bg-gray-50 rounded-lg p-4 mb-8">
+    <h4 class="text-sm font-semibold text-gray-500 uppercase mb-3">On this page</h4>
+    <ul class="space-y-2 text-sm">
+      <li><a href="#design-philosophy" class="text-primary hover:underline">Design Philosophy</a></li>
+      <li><a href="#safe-abstractions" class="text-primary hover:underline">Safe Abstractions</a></li>
+      <li><a href="#unsafe-functions" class="text-primary hover:underline">Unsafe Functions</a></li>
+      <li><a href="#safety-comments" class="text-primary hover:underline">Safety Documentation</a></li>
+      <li><a href="#common-patterns" class="text-primary hover:underline">Common Patterns</a></li>
+    </ul>
+  </nav>
+
+  <h2 id="design-philosophy" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Design Philosophy</h2>
+  <p class="text-gray-700 mb-4">
+    ergonomic-windows follows these principles:
+  </p>
+  <ul class="list-disc list-inside text-gray-700 space-y-2 mb-6">
+    <li><strong>Safe by default:</strong> The public API is safe unless explicitly marked <code class="bg-gray-100 px-1 rounded">unsafe</code></li>
+    <li><strong>Unsafe internals:</strong> FFI calls are made in carefully audited unsafe blocks</li>
+    <li><strong>RAII everywhere:</strong> Resources are automatically cleaned up when dropped</li>
+    <li><strong>Fail early:</strong> Invalid handles and null pointers are caught at creation time</li>
+  </ul>
+
+  <h2 id="safe-abstractions" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Safe Abstractions</h2>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">OwnedHandle</h3>
+  <p class="text-gray-700 mb-4">
+    <code class="bg-gray-100 px-1 rounded">OwnedHandle</code> ensures handles are properly closed:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-gray-500">// Safe: Handle is validated at creation</span>
+<span class="text-purple-400">let</span> handle = OwnedHandle::new(raw)?;
+
+<span class="text-gray-500">// Safe: Handle is automatically closed when dropped</span>
+drop(handle);
+
+<span class="text-gray-500">// Transfer ownership without closing</span>
+<span class="text-purple-400">let</span> raw = handle.into_raw();
+<span class="text-gray-500">// Now YOU are responsible for closing it</span></code></pre>
+  </div>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">WideString</h3>
+  <p class="text-gray-700 mb-4">
+    <code class="bg-gray-100 px-1 rounded">WideString</code> owns its buffer and provides safe access:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-purple-400">let</span> ws = WideString::new(<span class="text-green-400">"Hello"</span>);
+
+<span class="text-gray-500">// Safe: The pointer is valid as long as `ws` lives</span>
+some_api(ws.as_pcwstr());
+
+<span class="text-gray-500">// WRONG: Dangling pointer!</span>
+<span class="text-purple-400">let</span> ptr = WideString::new(<span class="text-green-400">"Hello"</span>).as_ptr(); <span class="text-gray-500">// WideString dropped!</span>
+some_api(ptr); <span class="text-gray-500">// ❌ Use after free!</span></code></pre>
+  </div>
+
+  <h2 id="unsafe-functions" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Unsafe Functions</h2>
+  <p class="text-gray-700 mb-4">
+    The following functions are marked <code class="bg-gray-100 px-1 rounded">unsafe</code> because they require
+    the caller to uphold certain invariants:
+  </p>
+
+  <div class="space-y-6 mb-8">
+    <div class="border border-red-200 rounded-lg p-4 bg-red-50">
+      <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">from_wide_ptr(ptr: *const u16)</h4>
+      <p class="text-gray-700 text-sm mb-2">Converts a raw UTF-16 pointer to a String.</p>
+      <h5 class="font-semibold text-gray-900 text-sm mb-1">Caller must ensure:</h5>
+      <ul class="text-xs text-gray-600 list-disc list-inside space-y-1">
+        <li>ptr is non-null and valid for reads</li>
+        <li>ptr points to a null-terminated UTF-16 string</li>
+        <li>Memory remains valid for the duration of the call</li>
+        <li>Memory is not mutated during the call</li>
+      </ul>
+    </div>
+
+    <div class="border border-red-200 rounded-lg p-4 bg-red-50">
+      <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">OwnedHandle::new_unchecked(handle: HANDLE)</h4>
+      <p class="text-gray-700 text-sm mb-2">Creates an OwnedHandle without validation.</p>
+      <h5 class="font-semibold text-gray-900 text-sm mb-1">Caller must ensure:</h5>
+      <ul class="text-xs text-gray-600 list-disc list-inside space-y-1">
+        <li>handle is a valid Windows handle</li>
+        <li>handle has not already been closed</li>
+        <li>Ownership is being transferred (no other code will close it)</li>
+      </ul>
+    </div>
+
+    <div class="border border-red-200 rounded-lg p-4 bg-red-50">
+      <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">BorrowedHandle::new(handle: HANDLE)</h4>
+      <p class="text-gray-700 text-sm mb-2">Creates a borrowed reference to a handle.</p>
+      <h5 class="font-semibold text-gray-900 text-sm mb-1">Caller must ensure:</h5>
+      <ul class="text-xs text-gray-600 list-disc list-inside space-y-1">
+        <li>handle is valid for the lifetime 'a</li>
+        <li>handle will not be closed during lifetime 'a</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2 id="safety-comments" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Safety Documentation</h2>
+  <p class="text-gray-700 mb-4">
+    All unsafe blocks in the codebase are documented with <code class="bg-gray-100 px-1 rounded">// SAFETY:</code>
+    comments explaining why the operation is safe:
+  </p>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-gray-500">// SAFETY: OpenProcess is safe to call with any pid and access rights.</span>
+<span class="text-gray-500">// It will return an error if the process doesn't exist or access is denied.</span>
+<span class="text-gray-500">// The returned handle is valid and we take ownership of it.</span>
+<span class="text-purple-400">let</span> handle = <span class="text-purple-400">unsafe</span> &#123; OpenProcess(access, false, pid)? &#125;;</code></pre>
+  </div>
+
+  <h2 id="common-patterns" class="text-2xl font-bold text-gray-900 mt-12 mb-4">Common Patterns</h2>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Using raw pointers from Windows APIs</h3>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-gray-500">// When a Windows API returns a pointer:</span>
+<span class="text-purple-400">let</span> ptr = <span class="text-purple-400">unsafe</span> &#123; SomeWindowsApi() &#125;;
+
+<span class="text-gray-500">// Check for null first</span>
+<span class="text-purple-400">if</span> ptr.is_null() &#123;
+    <span class="text-purple-400">return</span> Err(Error::null_pointer(<span class="text-green-400">"API returned null"</span>));
+&#125;
+
+<span class="text-gray-500">// Then convert safely</span>
+<span class="text-gray-500">// SAFETY: We've verified ptr is non-null, and the Windows API</span>
+<span class="text-gray-500">// documentation guarantees it points to a valid null-terminated string</span>
+<span class="text-purple-400">let</span> s = <span class="text-purple-400">unsafe</span> &#123; from_wide_ptr(ptr) &#125;?;</code></pre>
+  </div>
+
+  <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Passing strings to Windows APIs</h3>
+  <div class="bg-gray-900 rounded-lg p-4 mb-6 overflow-x-auto">
+    <pre><code class="text-gray-100"><span class="text-gray-500">// Create the WideString FIRST, then pass the pointer</span>
+<span class="text-purple-400">let</span> filename = WideString::new(<span class="text-green-400">"file.txt"</span>);
+
+<span class="text-gray-500">// Safe: filename lives longer than the API call</span>
+<span class="text-purple-400">unsafe</span> &#123;
+    SomeApi(filename.as_pcwstr());
+&#125;
+
+<span class="text-gray-500">// WRONG: Temporary is dropped before API call!</span>
+<span class="text-purple-400">unsafe</span> &#123;
+    SomeApi(WideString::new(<span class="text-green-400">"file.txt"</span>).as_pcwstr()); <span class="text-gray-500">// ❌</span>
+&#125;</code></pre>
+  </div>
+
+  <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mt-8">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-blue-800">Fuzzing</h3>
+        <p class="text-sm text-blue-700 mt-1">
+          The crate includes fuzz tests to find edge cases and crashes. Run them with
+          <code class="bg-blue-100 px-1 rounded">cargo +nightly fuzz run fuzz_strings</code>.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+

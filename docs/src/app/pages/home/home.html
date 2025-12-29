@@ -1,0 +1,172 @@
+<div class="space-y-12">
+  <!-- Hero Section -->
+  <div class="text-center py-12">
+    <div class="inline-flex items-center px-4 py-2 bg-primary/10 text-primary rounded-full text-sm font-medium mb-6">
+      🦀 Built for Rust on Windows
+    </div>
+    <h1 class="text-5xl font-bold text-gray-900 mb-6">ergonomic-windows</h1>
+    <p class="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+      Ergonomic, safe, and efficient wrappers around Windows APIs for Rust.
+      Stop wrestling with raw Win32 calls and start building.
+    </p>
+    <div class="flex justify-center gap-4">
+      <a
+        routerLink="/getting-started"
+        class="px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors shadow-lg"
+      >
+        Get Started
+      </a>
+      <a
+        href="https://github.com/pegasusheavy/ergonomic-windows"
+        target="_blank"
+        class="px-6 py-3 bg-white text-gray-700 font-semibold rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+      >
+        View on GitHub
+      </a>
+    </div>
+  </div>
+
+  <!-- Installation -->
+  <div class="bg-gray-900 rounded-xl p-6 shadow-xl">
+    <div class="flex items-center justify-between mb-4">
+      <span class="text-gray-400 text-sm">Cargo.toml</span>
+      <button class="text-gray-400 hover:text-white transition-colors text-sm">Copy</button>
+    </div>
+    <pre class="text-green-400 font-mono text-sm overflow-x-auto"><code>[dependencies]
+ergonomic-windows = "0.1"</code></pre>
+  </div>
+
+  <!-- Features Grid -->
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">String Conversions</h3>
+      <p class="text-gray-600 text-sm">
+        Seamless UTF-8 to UTF-16 conversions with <code class="bg-gray-100 px-1 rounded">WideString</code> and builder patterns.
+      </p>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
+        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">RAII Handle Management</h3>
+      <p class="text-gray-600 text-sm">
+        Automatic handle cleanup with <code class="bg-gray-100 px-1 rounded">OwnedHandle</code>. No more leaked resources.
+      </p>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mb-4">
+        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">Process Management</h3>
+      <p class="text-gray-600 text-sm">
+        Spawn, wait, and manage Windows processes with a familiar builder API.
+      </p>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">Registry Access</h3>
+      <p class="text-gray-600 text-sm">
+        Read and write registry keys with typed values. Supports all common registry types.
+      </p>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4">
+        <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">Window Creation</h3>
+      <p class="text-gray-600 text-sm">
+        Create native Windows with message handling using a trait-based event system.
+      </p>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
+      <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-4">
+        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path>
+        </svg>
+      </div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">File System</h3>
+      <p class="text-gray-600 text-sm">
+        Windows-specific file operations including attributes, metadata, and more.
+      </p>
+    </div>
+  </div>
+
+  <!-- Quick Example -->
+  <div>
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Quick Example</h2>
+    <div class="bg-gray-900 rounded-xl p-6 shadow-xl overflow-x-auto">
+      <pre class="text-sm"><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::prelude::*;
+
+<span class="text-purple-400">fn</span> <span class="text-yellow-400">main</span>() -> Result&lt;()&gt; &#123;
+    <span class="text-gray-500">// String conversions are automatic</span>
+    <span class="text-purple-400">let</span> wide = WideString::new(<span class="text-green-400">"Hello, Windows! 🪟"</span>);
+
+    <span class="text-gray-500">// Spawn a process with the builder pattern</span>
+    <span class="text-purple-400">let</span> process = Command::new(<span class="text-green-400">"notepad.exe"</span>)
+        .arg(<span class="text-green-400">"file.txt"</span>)
+        .spawn()?;
+
+    <span class="text-gray-500">// Read from the registry</span>
+    <span class="text-purple-400">let</span> version = registry::get_string(
+        RootKey::LOCAL_MACHINE,
+        <span class="text-green-400">"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"</span>,
+        <span class="text-green-400">"ProductName"</span>
+    )?;
+
+    println!(<span class="text-green-400">"Running on: &#123;&#125;"</span>, version);
+    Ok(())
+&#125;</code></pre>
+    </div>
+  </div>
+
+  <!-- Performance Note -->
+  <div class="bg-gradient-to-r from-primary/10 to-blue-100 rounded-xl p-8">
+    <div class="flex items-start space-x-4">
+      <div class="flex-shrink-0">
+        <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-lg font-semibold text-gray-900 mb-2">Optimized for Performance</h3>
+        <p class="text-gray-700">
+          String conversions use a single allocation. Hot paths are inlined.
+          Benchmarked and profiled for minimal overhead over raw Win32 calls.
+        </p>
+        <a routerLink="/guides/performance" class="inline-flex items-center mt-4 text-primary font-medium hover:underline">
+          Learn more about performance
+          <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- License -->
+  <div class="text-center text-gray-500 text-sm">
+    <p>Licensed under MIT OR Apache-2.0</p>
+    <p class="mt-1">© 2025 Pegasus Heavy Industries LLC</p>
+  </div>
+</div>
+

@@ -1,0 +1,133 @@
+<div class="prose max-w-none">
+  <div class="flex items-center space-x-3 mb-6">
+    <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+    <h1 class="text-4xl font-bold text-gray-900 m-0">Handle Management</h1>
+  </div>
+  <p class="text-xl text-gray-600 mb-8">
+    RAII wrappers for Windows handles that automatically close when dropped.
+  </p>
+
+  <div class="bg-gray-100 rounded-lg p-4 mb-8">
+    <code class="text-sm">use ergonomic_windows::handle::*;</code>
+  </div>
+
+  <!-- OwnedHandle -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">OwnedHandle</h2>
+    <p class="text-gray-700 mb-4">
+      A safe wrapper around a Windows <code class="bg-gray-100 px-1 rounded">HANDLE</code> that automatically
+      closes the handle when dropped. This prevents resource leaks and ensures proper cleanup.
+    </p>
+    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">pub struct</span> OwnedHandle &#123;
+    handle: HANDLE,
+&#125;</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Methods</h3>
+
+    <div class="space-y-6">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new(handle: HANDLE) -> Result&lt;Self&gt;</h4>
+        <p class="text-gray-600 text-sm">Creates a new OwnedHandle. Returns an error if the handle is null or invalid.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">new_allow_null(handle: HANDLE) -> Result&lt;Self&gt;</h4>
+        <p class="text-gray-600 text-sm">Creates a new OwnedHandle, allowing null handles (but not INVALID_HANDLE_VALUE).</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4 bg-red-50">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">unsafe new_unchecked(handle: HANDLE) -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates an OwnedHandle without validation. Caller must ensure the handle is valid.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">as_raw(&amp;self) -> HANDLE</h4>
+        <p class="text-gray-600 text-sm">Returns the raw HANDLE for use with Windows APIs.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">into_raw(self) -> HANDLE</h4>
+        <p class="text-gray-600 text-sm">Consumes the OwnedHandle and returns the raw HANDLE without closing it. Caller is responsible for closing.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">try_clone(&amp;self) -> Result&lt;Self&gt;</h4>
+        <p class="text-gray-600 text-sm">Duplicates the handle, creating a new independently-owned handle.</p>
+      </div>
+    </div>
+
+    <h4 class="font-semibold text-gray-900 mt-6 mb-2">Example</h4>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::handle::OwnedHandle;
+
+<span class="text-gray-500">// Wrap a raw handle from a Windows API</span>
+<span class="text-purple-400">let</span> handle = OwnedHandle::new(raw_handle)?;
+
+<span class="text-gray-500">// Use the handle</span>
+some_api(handle.as_raw());
+
+<span class="text-gray-500">// Handle is automatically closed when `handle` goes out of scope</span></code></pre>
+    </div>
+
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mt-4">
+      <p class="text-sm text-blue-700">
+        <strong>Note:</strong> OwnedHandle implements <code>Drop</code>, so the handle is closed when the struct is dropped.
+        Use <code>into_raw()</code> if you need to transfer ownership without closing.
+      </p>
+    </div>
+  </section>
+
+  <!-- BorrowedHandle -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">BorrowedHandle</h2>
+    <p class="text-gray-700 mb-4">
+      A borrowed reference to a Windows handle. Does not close the handle when dropped.
+      Useful for passing handles to functions without transferring ownership.
+    </p>
+    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">pub struct</span> BorrowedHandle&lt;'a&gt; &#123;
+    handle: HANDLE,
+    _marker: PhantomData&lt;&amp;'a ()&gt;,
+&#125;</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Methods</h3>
+
+    <div class="space-y-6">
+      <div class="border border-gray-200 rounded-lg p-4 bg-red-50">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">unsafe new(handle: HANDLE) -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates a borrowed handle. Caller must ensure the handle remains valid for lifetime 'a.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">from_owned(owned: &amp;'a OwnedHandle) -> Self</h4>
+        <p class="text-gray-600 text-sm">Creates a borrowed handle from an owned handle.</p>
+      </div>
+
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">as_raw(&amp;self) -> HANDLE</h4>
+        <p class="text-gray-600 text-sm">Returns the raw HANDLE.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HandleExt Trait -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">HandleExt Trait</h2>
+    <p class="text-gray-700 mb-4">
+      Extension trait for working with Windows handles.
+    </p>
+    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">pub trait</span> HandleExt &#123;
+    <span class="text-purple-400">fn</span> <span class="text-yellow-400">is_valid</span>(&amp;self) -> bool;
+&#125;</code></pre>
+    </div>
+    <p class="text-gray-700 mb-4">
+      Implemented for <code class="bg-gray-100 px-1 rounded">HANDLE</code>. Returns true if the handle is not null
+      and not <code class="bg-gray-100 px-1 rounded">INVALID_HANDLE_VALUE</code>.
+    </p>
+  </section>
+</div>
+

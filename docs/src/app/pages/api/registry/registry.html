@@ -1,0 +1,208 @@
+<div class="prose max-w-none">
+  <div class="flex items-center space-x-3 mb-6">
+    <span class="w-3 h-3 bg-purple-500 rounded-full"></span>
+    <h1 class="text-4xl font-bold text-gray-900 m-0">Registry</h1>
+  </div>
+  <p class="text-xl text-gray-600 mb-8">
+    Windows Registry access with typed values and automatic resource management.
+  </p>
+
+  <div class="bg-gray-100 rounded-lg p-4 mb-8">
+    <code class="text-sm">use ergonomic_windows::registry::*;</code>
+  </div>
+
+  <!-- Quick Example -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Quick Example</h2>
+    <div class="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">use</span> ergonomic_windows::registry::*;
+
+<span class="text-gray-500">// Read a string value</span>
+<span class="text-purple-400">let</span> product = get_string(
+    RootKey::LOCAL_MACHINE,
+    <span class="text-green-400">"SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion"</span>,
+    <span class="text-green-400">"ProductName"</span>
+)?;
+
+<span class="text-gray-500">// Open a key for multiple operations</span>
+<span class="text-purple-400">let</span> key = Key::open(
+    RootKey::CURRENT_USER,
+    <span class="text-green-400">"Software\\MyApp"</span>,
+    Access::READ
+)?;
+
+<span class="text-purple-400">for</span> name <span class="text-purple-400">in</span> key.values()? &#123;
+    println!(<span class="text-green-400">"Value: &#123;&#125;"</span>, name);
+&#125;</code></pre>
+    </div>
+  </section>
+
+  <!-- RootKey -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">RootKey</h2>
+    <p class="text-gray-700 mb-4">
+      Predefined registry root keys.
+    </p>
+
+    <div class="grid gap-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">RootKey::CLASSES_ROOT</h4>
+        <p class="text-gray-600 text-sm">HKEY_CLASSES_ROOT - File associations and COM objects.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">RootKey::CURRENT_USER</h4>
+        <p class="text-gray-600 text-sm">HKEY_CURRENT_USER - Current user settings.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">RootKey::LOCAL_MACHINE</h4>
+        <p class="text-gray-600 text-sm">HKEY_LOCAL_MACHINE - System-wide settings.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">RootKey::USERS</h4>
+        <p class="text-gray-600 text-sm">HKEY_USERS - All user profiles.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">RootKey::CURRENT_CONFIG</h4>
+        <p class="text-gray-600 text-sm">HKEY_CURRENT_CONFIG - Current hardware profile.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Access -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Access</h2>
+    <p class="text-gray-700 mb-4">
+      Registry access rights.
+    </p>
+
+    <div class="grid gap-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">Access::READ</h4>
+        <p class="text-gray-600 text-sm">Read access.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">Access::WRITE</h4>
+        <p class="text-gray-600 text-sm">Write access.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">Access::ALL</h4>
+        <p class="text-gray-600 text-sm">Full access.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">Access::WOW64_32 / WOW64_64</h4>
+        <p class="text-gray-600 text-sm">Access 32-bit or 64-bit registry view on 64-bit Windows.</p>
+      </div>
+    </div>
+
+    <p class="text-gray-700 mt-4">
+      Combine access flags with <code class="bg-gray-100 px-1 rounded">.with()</code>:
+    </p>
+    <div class="bg-gray-900 rounded-lg p-4 mt-2 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">let</span> access = Access::READ.with(Access::WOW64_64);</code></pre>
+    </div>
+  </section>
+
+  <!-- Value -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Value</h2>
+    <p class="text-gray-700 mb-4">
+      Registry value types. All common Windows registry types are supported.
+    </p>
+
+    <div class="bg-gray-900 rounded-lg p-4 mb-4 overflow-x-auto">
+      <pre><code class="text-gray-100"><span class="text-purple-400">pub enum</span> Value &#123;
+    String(String),        <span class="text-gray-500">// REG_SZ</span>
+    ExpandString(String),  <span class="text-gray-500">// REG_EXPAND_SZ</span>
+    MultiString(Vec&lt;String&gt;), <span class="text-gray-500">// REG_MULTI_SZ</span>
+    Dword(u32),            <span class="text-gray-500">// REG_DWORD</span>
+    Qword(u64),            <span class="text-gray-500">// REG_QWORD</span>
+    Binary(Vec&lt;u8&gt;),       <span class="text-gray-500">// REG_BINARY</span>
+&#125;</code></pre>
+    </div>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">as_string(&amp;self) -> Option&lt;&amp;str&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the value as a string (if String or ExpandString).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">as_dword(&amp;self) -> Option&lt;u32&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the value as a u32.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">as_qword(&amp;self) -> Option&lt;u64&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the value as a u64.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">as_binary(&amp;self) -> Option&lt;&amp;[u8]&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets the value as binary data.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Key -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Key</h2>
+    <p class="text-gray-700 mb-4">
+      An opened registry key. Automatically closed when dropped.
+    </p>
+
+    <h3 class="text-xl font-semibold text-gray-900 mt-8 mb-4">Methods</h3>
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">open(root: RootKey, path: &amp;str, access: Access) -> Result&lt;Self&gt;</h4>
+        <p class="text-gray-600 text-sm">Opens an existing key.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">create(root: RootKey, path: &amp;str, access: Access) -> Result&lt;Self&gt;</h4>
+        <p class="text-gray-600 text-sm">Creates or opens a key.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">get_value(&amp;self, name: &amp;str) -> Result&lt;Value&gt;</h4>
+        <p class="text-gray-600 text-sm">Gets a value from this key.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">set_value(&amp;self, name: &amp;str, value: &amp;Value) -> Result&lt;()&gt;</h4>
+        <p class="text-gray-600 text-sm">Sets a value in this key.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">delete_value(&amp;self, name: &amp;str) -> Result&lt;()&gt;</h4>
+        <p class="text-gray-600 text-sm">Deletes a value.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">subkeys(&amp;self) -> Result&lt;Vec&lt;String&gt;&gt;</h4>
+        <p class="text-gray-600 text-sm">Lists all subkeys.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">values(&amp;self) -> Result&lt;Vec&lt;String&gt;&gt;</h4>
+        <p class="text-gray-600 text-sm">Lists all value names.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Convenience Functions -->
+  <section class="mb-12">
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">Convenience Functions</h2>
+
+    <div class="space-y-4">
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">get_string(root, path, name) -> Result&lt;String&gt;</h4>
+        <p class="text-gray-600 text-sm">Reads a string value.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">get_dword(root, path, name) -> Result&lt;u32&gt;</h4>
+        <p class="text-gray-600 text-sm">Reads a DWORD value.</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">set_string(root, path, name, value) -> Result&lt;()&gt;</h4>
+        <p class="text-gray-600 text-sm">Sets a string value (creates key if needed).</p>
+      </div>
+      <div class="border border-gray-200 rounded-lg p-4">
+        <h4 class="font-mono text-sm font-semibold text-gray-900 mb-2">set_dword(root, path, name, value) -> Result&lt;()&gt;</h4>
+        <p class="text-gray-600 text-sm">Sets a DWORD value (creates key if needed).</p>
+      </div>
+    </div>
+  </section>
+</div>
+
