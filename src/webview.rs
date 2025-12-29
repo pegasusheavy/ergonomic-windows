@@ -30,10 +30,15 @@
 mod inner {
     use crate::error::{Error, Result};
     use crate::string::WideString;
-    use std::cell::RefCell;
-    use std::path::Path;
-    use std::rc::Rc;
     use std::sync::mpsc;
+    use webview2_com::Microsoft::Web::WebView2::Win32::{
+        CreateCoreWebView2EnvironmentWithOptions, ICoreWebView2, ICoreWebView2Controller,
+    };
+    use webview2_com::{
+        CreateCoreWebView2ControllerCompletedHandler, CreateCoreWebView2EnvironmentCompletedHandler,
+        ExecuteScriptCompletedHandler,
+    };
+    use windows::core::{PCWSTR, PWSTR};
     use windows::Win32::Foundation::{HWND, RECT};
     use windows::Win32::UI::WindowsAndMessaging::GetClientRect;
 
@@ -93,33 +98,32 @@ mod inner {
         /// This is an asynchronous operation. The WebView will be created
         /// and attached to the parent window.
         pub fn build(self, parent: HWND) -> Result<WebView> {
-            use webview2_com::Microsoft::Web::WebView2::Win32::*;
-            use webview2_com::*;
-            use windows::core::Interface;
-
             // Get parent window bounds
             let mut rect = RECT::default();
             unsafe {
-                GetClientRect(parent, &mut rect).map_err(|e| Error::from_win32(e.into()))?;
+                GetClientRect(parent, &mut rect).map_err(Error::from_win32)?;
             }
 
             // Create environment and controller synchronously using a channel
             let (tx, rx) = mpsc::channel();
 
-            let user_data = self.user_data_folder.clone();
             let url = self.url.clone();
             let enable_dev_tools = self.enable_dev_tools;
             let enable_context_menu = self.enable_context_menu;
             let enable_zoom = self.enable_zoom;
 
+            // Prepare user data folder path
+            let user_data_wide = self.user_data_folder.as_ref().map(|s| WideString::new(s));
+            let user_data_pcwstr: PCWSTR = user_data_wide
+                .as_ref()
+                .map(|w| w.as_pcwstr())
+                .unwrap_or(PCWSTR::null());
+
             // Create the environment
             let create_result = unsafe {
                 CreateCoreWebView2EnvironmentWithOptions(
-                    None,
-                    user_data.as_ref().map(|s| {
-                        let wide = WideString::new(s);
-                        wide.as_pcwstr()
-                    }),
+                    PCWSTR::null(),
+                    user_data_pcwstr,
                     None,
                     &CreateCoreWebView2EnvironmentCompletedHandler::create(Box::new(
                         move |_err, env| {
@@ -198,8 +202,8 @@ mod inner {
 
     /// A WebView2 browser control.
     pub struct WebView {
-        controller: webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2Controller,
-        webview: webview2_com::Microsoft::Web::WebView2::Win32::ICoreWebView2,
+        controller: ICoreWebView2Controller,
+        webview: ICoreWebView2,
         parent: HWND,
     }
 
@@ -228,8 +232,6 @@ mod inner {
 
         /// Executes JavaScript in the context of the current page.
         pub fn execute_script(&self, script: &str) -> Result<()> {
-            use webview2_com::Microsoft::Web::WebView2::Win32::*;
-
             let script_wide = WideString::new(script);
             unsafe {
                 self.webview
@@ -286,7 +288,7 @@ mod inner {
         pub fn resize_to_parent(&self) -> Result<()> {
             let mut rect = RECT::default();
             unsafe {
-                GetClientRect(self.parent, &mut rect).map_err(|e| Error::from_win32(e.into()))?;
+                GetClientRect(self.parent, &mut rect).map_err(Error::from_win32)?;
                 self.controller
                     .SetBounds(rect)
                     .map_err(|_| Error::custom("SetBounds failed"))?;
@@ -327,11 +329,14 @@ mod inner {
         /// Gets the current URL.
         pub fn url(&self) -> Result<String> {
             unsafe {
-                let source = self
-                    .webview
-                    .Source()
+                let mut source: PWSTR = PWSTR::null();
+                self.webview
+                    .Source(&mut source)
                     .map_err(|_| Error::custom("Failed to get Source"))?;
-                Ok(source.to_string())
+                if source.is_null() {
+                    return Ok(String::new());
+                }
+                Ok(source.to_string().unwrap_or_default())
             }
         }
 
