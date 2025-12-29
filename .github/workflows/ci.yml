@@ -71,13 +71,15 @@ jobs:
       - run: cargo bench --no-run
 
   msrv:
-    name: MSRV (1.71.0)
+    name: MSRV (1.82.0)
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@master
         with:
-          toolchain: "1.71.0"
+          toolchain: "1.82.0"
       - uses: Swatinem/rust-cache@v2
+      # Delete Cargo.lock to let the MSRV resolver pick compatible versions
+      - run: Remove-Item Cargo.lock -ErrorAction SilentlyContinue
       - run: cargo check --all-features
 

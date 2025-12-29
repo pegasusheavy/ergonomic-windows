@@ -2,7 +2,7 @@
 name = "ergonomic-windows"
 version = "0.1.0"
 edition = "2021"
-rust-version = "1.71"
+rust-version = "1.82"
 description = "Ergonomic, safe Rust wrappers for Windows APIs - handles, processes, registry, file system, and UTF-16 strings with zero-cost abstractions"
 license = "MIT OR Apache-2.0"
 authors = ["Pegasus Heavy Industries LLC"]
