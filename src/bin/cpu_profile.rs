@@ -7,7 +7,9 @@
 //!
 //! This generates flamegraph.svg showing CPU time spent in each function.
 
-use ergonomic_windows::string::{from_wide, to_wide, WideString, WideStringBuilder, WideStringPool};
+use ergonomic_windows::string::{
+    from_wide, to_wide, WideString, WideStringBuilder, WideStringPool,
+};
 use std::hint::black_box;
 
 fn main() {
@@ -72,7 +74,10 @@ fn profile_wide_string_sso() {
         }
     }
 
-    println!("  WideString SSO: {} iterations", ITERATIONS * small_strings.len());
+    println!(
+        "  WideString SSO: {} iterations",
+        ITERATIONS * small_strings.len()
+    );
 }
 
 /// Profile WideString with heap allocation
@@ -114,7 +119,10 @@ fn profile_wide_string_pool() {
         }
     }
 
-    println!("  WideStringPool: {} iterations", ITERATIONS * strings.len());
+    println!(
+        "  WideStringPool: {} iterations",
+        ITERATIONS * strings.len()
+    );
 }
 
 /// Profile WideStringBuilder for incremental string building
@@ -184,4 +192,3 @@ fn profile_mixed_workload() {
 
     println!("  Mixed workload: {} iterations", ITERATIONS);
 }
-

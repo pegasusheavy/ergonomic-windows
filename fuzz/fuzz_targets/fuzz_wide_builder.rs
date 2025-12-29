@@ -1,6 +1,9 @@
 //! Fuzz target for WideStringBuilder.
 //!
 //! This tests the incremental string building functionality.
+//!
+//! Note: Strings with embedded nulls (U+0000) will be truncated when
+//! converting back via from_wide, as Windows uses null-terminated strings.
 
 #![no_main]
 
@@ -31,17 +34,20 @@ fuzz_target!(|input: BuilderInput| {
         _ => WideStringBuilder::new(),
     };
 
-    // Build the expected result
-    let mut expected = String::new();
+    // Build the full result (including any embedded nulls)
+    let mut full_expected = String::new();
     for segment in &input.segments {
         builder.push(segment);
-        expected.push_str(segment);
+        full_expected.push_str(segment);
     }
 
-    // Check length before building
-    let expected_utf16_len = expected.encode_utf16().count();
-    assert_eq!(builder.len(), expected_utf16_len, "Builder length should match");
-    assert_eq!(builder.is_empty(), expected.is_empty());
+    // The effective result after from_wide (truncated at first null)
+    let effective_expected = full_expected.split('\0').next().unwrap_or("");
+
+    // Check length before building - builder tracks full length including nulls
+    let full_utf16_len = full_expected.encode_utf16().count();
+    assert_eq!(builder.len(), full_utf16_len, "Builder length should match full content");
+    assert_eq!(builder.is_empty(), full_expected.is_empty());
 
     // Build the final string
     let wide = builder.build();
@@ -49,9 +55,9 @@ fuzz_target!(|input: BuilderInput| {
     // Verify null termination
     assert!(wide.last() == Some(&0), "Must be null-terminated");
 
-    // Convert back and verify
+    // Convert back and verify - will truncate at first embedded null
     if let Ok(back) = from_wide(&wide) {
-        assert_eq!(expected, back, "Built string should match expected");
+        assert_eq!(effective_expected, back, "Built string should match expected (up to first null)");
     }
 });
 

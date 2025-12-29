@@ -649,6 +649,48 @@ mod tests {
     }
 
     #[test]
+    fn test_roundtrip_control_char() {
+        // Test with U+001F (unit separator) - found by fuzzer
+        let original = "He\x1f";
+        let wide = to_wide(original);
+        println!("Wide for 'He\\x1f': {:?}", wide);
+        let back = from_wide(&wide).unwrap();
+        assert_eq!(original, back, "Roundtrip with control char failed");
+    }
+
+    #[test]
+    fn test_roundtrip_soh() {
+        // Test with U+0001 (SOH) - found by fuzzer
+        let original = "test\x01";
+        println!("Original: {:?} (len={})", original, original.len());
+        println!("Original bytes: {:?}", original.as_bytes());
+
+        let wide = to_wide(original);
+        println!("Wide: {:?} (len={})", wide, wide.len());
+
+        let back = from_wide(&wide).unwrap();
+        println!("Back: {:?} (len={})", back, back.len());
+        println!("Back bytes: {:?}", back.as_bytes());
+
+        assert_eq!(original, back, "Roundtrip with SOH failed");
+    }
+
+    #[test]
+    fn test_roundtrip_windows_path_with_control() {
+        // Exact case from fuzzer: C:\Windows\Sy{e\r\n\u{1}
+        let original = "C:\\Windows\\Sy{e\r\n\x01";
+        println!("Original bytes: {:?}", original.as_bytes());
+
+        let wide = to_wide(original);
+        println!("Wide: {:?}", wide);
+
+        let back = from_wide(&wide).unwrap();
+        println!("Back bytes: {:?}", back.as_bytes());
+
+        assert_eq!(original, back, "Roundtrip with path failed");
+    }
+
+    #[test]
     fn test_empty_string() {
         let wide = to_wide("");
         assert_eq!(wide, vec![0]);
