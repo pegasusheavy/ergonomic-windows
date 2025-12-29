@@ -120,7 +120,7 @@ pub mod prelude {
     pub use crate::handle::{BorrowedHandle, HandleExt, OwnedHandle};
     pub use crate::process::{Command, Process, ProcessAccess};
     pub use crate::registry::{Access, Key, RootKey, Value};
-    pub use crate::string::{from_wide, to_wide, WideString};
+    pub use crate::string::{from_wide, from_wide_buffer, to_wide, WideString};
     pub use crate::window::{
         ExStyle, Message, MessageHandler, ShowCommand, Style, Window, WindowBuilder,
     };

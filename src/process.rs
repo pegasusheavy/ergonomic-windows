@@ -376,23 +376,38 @@ fn quote_arg(arg: &str) -> Cow<'_, str> {
 
 /// Gets the current process ID.
 ///
-/// This function always succeeds.
+/// This function always succeeds and is completely safe.
+/// It simply returns the process ID of the calling process.
 #[inline]
 pub fn current_pid() -> u32 {
-    // SAFETY: GetCurrentProcessId has no preconditions and always succeeds.
+    // SAFETY: GetCurrentProcessId is a pure function with no preconditions.
+    // It has no side effects, takes no parameters, and always succeeds.
+    // The Windows documentation guarantees this function cannot fail.
+    // This unsafe block is only required because it's FFI, not because
+    // the operation itself is unsafe in any way.
     unsafe { windows::Win32::System::Threading::GetCurrentProcessId() }
 }
 
 /// Gets a pseudo-handle to the current process.
 ///
-/// # Note
+/// This function always succeeds and returns a special pseudo-handle
+/// that represents the current process. This pseudo-handle:
+/// - Does NOT need to be closed (and must not be passed to CloseHandle)
+/// - Is only valid within the current process
+/// - Can be used anywhere a process handle is expected for the current process
 ///
-/// This returns a pseudo-handle that does not need to be closed. The returned
-/// handle is only valid in the context of the current process.
+/// # Safety Note
+///
+/// While this function is marked as requiring `unsafe` due to FFI,
+/// the operation itself is completely safe - it cannot fail and has
+/// no preconditions. The returned handle is a constant value (-1)
+/// that Windows interprets as "the current process".
 #[inline]
 pub fn current_process() -> HANDLE {
-    // SAFETY: GetCurrentProcess has no preconditions and always succeeds.
-    // It returns a pseudo-handle that doesn't need to be closed.
+    // SAFETY: GetCurrentProcess is a pure function with no preconditions.
+    // It returns a pseudo-handle (constant -1) that represents the current process.
+    // This function cannot fail and has no side effects.
+    // The unsafe block is only required because it's FFI.
     unsafe { windows::Win32::System::Threading::GetCurrentProcess() }
 }
 

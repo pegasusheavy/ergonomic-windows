@@ -112,11 +112,36 @@ pub unsafe fn from_wide_ptr(ptr: *const u16) -> Result<String> {
 /// Converts a UTF-16 slice with a known length to a Rust `String`.
 ///
 /// Unlike `from_wide`, this does not look for a null terminator.
+/// This is a **safe** alternative to `from_wide_ptr` when you have a slice.
 #[inline]
 pub fn from_wide_with_len(wide: &[u16], len: usize) -> Result<String> {
     let actual_len = len.min(wide.len());
     // Use String::from_utf16 directly instead of going through OsString
     String::from_utf16(&wide[..actual_len])
+        .map_err(|_| Error::string_conversion("Invalid UTF-16 sequence"))
+}
+
+/// Converts a UTF-16 buffer to a Rust `String`, stopping at the first null or buffer end.
+///
+/// This is a **safe** alternative to `from_wide_ptr` for fixed-size buffers.
+/// It scans for a null terminator within the buffer bounds and converts only
+/// the valid portion.
+///
+/// # Example
+///
+/// ```
+/// use ergonomic_windows::string::from_wide_buffer;
+///
+/// // A buffer from a Windows API with potential null terminator
+/// let buffer: [u16; 10] = [72, 101, 108, 108, 111, 0, 0, 0, 0, 0];
+/// let s = from_wide_buffer(&buffer).unwrap();
+/// assert_eq!(s, "Hello");
+/// ```
+#[inline]
+pub fn from_wide_buffer(buffer: &[u16]) -> Result<String> {
+    // Find null terminator or use entire buffer
+    let len = buffer.iter().position(|&c| c == 0).unwrap_or(buffer.len());
+    String::from_utf16(&buffer[..len])
         .map_err(|_| Error::string_conversion("Invalid UTF-16 sequence"))
 }
 
